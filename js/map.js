@@ -190,6 +190,28 @@ var addPhotoImage = function (element, photoBlock) {
 };
 
 /**
+ * Переводит строку с английского языка на русский
+ * @param {string} element - строка, которую надо перевести
+ * @return {string}
+ */
+var translatingOfferType = function (element) {
+  if (element === 'flat') {
+    element = 'Квартира';
+  }
+  if (element === 'palace') {
+    element = 'Дворец';
+  }
+  if (element === 'house') {
+    element = 'Дом';
+  }
+  if (element === 'bungalo') {
+    element = 'Бунгало';
+  }
+
+  return element;
+};
+
+/**
  * Создает DOM-элемент объявления
  * @param {Object} element - объект, содержащий данные для создания DOM-элементов
  */
@@ -200,7 +222,7 @@ var createMapCard = function (element) {
   mapCard.querySelector('.popup__title').textContent = element.offer.title;
   mapCard.querySelector('.popup__text--address').textContent = element.offer.adress;
   mapCard.querySelector('.popup__text--price').textContent = element.offer.price + '₽/ночь';
-  mapCard.querySelector('.popup__type').textContent = element.offer.type;
+  mapCard.querySelector('.popup__type').textContent = translatingOfferType(element.offer.type);
   mapCard.querySelector('.popup__text--capacity').textContent = element.offer.rooms + ' комнаты для ' + element.offer.guests + ' гостей';
   mapCard.querySelector('.popup__text--time').textContent = 'Заезд после ' + element.offer.checkin + ', выезд до ' + element.offer.checkout;
   mapCard.querySelector('.popup__description').textContent = element.offer.description;
