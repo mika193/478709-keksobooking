@@ -1,243 +1,317 @@
 'use strict';
 
 var NUMBER_OF_ADS = 8;
-var AVATAR_FIRST_NUMBER = 0;
-var AVATAR_URL = 'img/avatars/user';
-var AVATAR_EXTENSION = '.png';
-var MINIMUM_X_CORD = 300;
-var MAXIMUM_X_CORD = 900;
-var MINIMUM_Y_CORD = 130;
-var MAXIMUM_Y_CORD = 630;
-var MAXIMUM_PRICE = 1000000;
-var MINIMUM_PRICE = 1000;
 var MAXIMUM_ROOM_COUNT = 5;
 var MAXIMUM_GUEST_COUNT = 100;
-var PIN_WIDTH = 50;
-var PIN_HEIGHT = 70;
 
-var propertyTitlesList = [
-  'Большая уютная квартира',
-  'Маленькая неуютная квартира',
-  'Огромный прекрасный дворец',
-  'Маленький ужасный дворец',
-  'Красивый гостевой домик',
-  'Некрасивый негостеприимный домик',
-  'Уютное бунгало далеко от моря',
-  'Неуютное бунгало по колено в воде'
-];
+var avatar = {
+  FIRST_NUMBER: 0,
+  URL: 'img/avatars/user',
+  EXTENSION: '.png'
+};
 
-var checkinTimesList = [
-  '12:00',
-  '13:00',
-  '14:00'
-];
+var xCord = {
+  MINIMUM: 300,
+  MAXIMUM: 900
+};
 
-var checkoutTimesList = [
-  '12:00',
-  '13:00',
-  '14:00'
-];
+var yCord = {
+  MINIMUM: 130,
+  MAXIMUM: 630
+};
 
-var featuresList = [
-  'wifi',
-  'dishwasher',
-  'parking',
-  'washer',
-  'elevator',
-  'conditioner'
-];
+var price = {
+  MINIMUM: 1000000,
+  MAXIMUM: 1000
+};
 
-var photosList = [
-  'http://o0.github.io/assets/images/tokyo/hotel1.jpg',
-  'http://o0.github.io/assets/images/tokyo/hotel2.jpg',
-  'http://o0.github.io/assets/images/tokyo/hotel3.jpg'
-];
+var pin = {
+  WIDTH: 50,
+  HEIGHT: 70
+};
+
+var characteristicsList = {
+  propertyTitles: [
+    'Большая уютная квартира',
+    'Маленькая неуютная квартира',
+    'Огромный прекрасный дворец',
+    'Маленький ужасный дворец',
+    'Красивый гостевой домик',
+    'Некрасивый негостеприимный домик',
+    'Уютное бунгало далеко от моря',
+    'Неуютное бунгало по колено в воде'
+  ],
+
+  times: [
+    '12:00',
+    '13:00',
+    '14:00'
+  ],
+
+  features: [
+    'wifi',
+    'dishwasher',
+    'parking',
+    'washer',
+    'elevator',
+    'conditioner'
+  ],
+
+  photos: [
+    'http://o0.github.io/assets/images/tokyo/hotel1.jpg',
+    'http://o0.github.io/assets/images/tokyo/hotel2.jpg',
+    'http://o0.github.io/assets/images/tokyo/hotel3.jpg'
+  ]
+};
+
+var offerTypesTranslation = {
+  'flat': 'Квартира',
+  'palace': 'Дворец',
+  'house': 'Дом',
+  'bungalo': 'Бунгало',
+};
+
+var mapPins = document.querySelector('.map__pins');
+var mapPinTemplate = document.querySelector('template').content.querySelector('.map__pin');
+var map = document.querySelector('.map');
+var mapCard = document.querySelector('template').content.querySelector('.map__card').cloneNode(true);
+var featuresBlock = mapCard.querySelector('.popup__features');
+var photoBlock = mapCard.querySelector('.popup__photos');
 
 /**
-* Создает массив типов собственности propertyTypesList и одновременно приводит его в соответствие с массивом заголовков предложений propertyTitlesList
+ * Генерирует случайное число в заданном диапазоне
+ * @param {number} minimum - минимальное значение генерируемого числа
+ * @param {number} maximum - максимальное значение генерируемого числа
+ * @return {number}
+ */
+var generateRandomNumber = function (minimum, maximum) {
+  return Math.random() * (maximum - minimum) + minimum;
+};
+
+/**
+ * Генерирует путь к аватарке
+ * @param {number} index - порядковый номер аватара
+ * @return {string}
+ */
+var generateAvatarPath = function (index) {
+  return avatar.URL + avatar.FIRST_NUMBER + (index + 1) + avatar.EXTENSION;
+};
+
+/**
+* Создает массив типов собственности и приводит его в соответствие с массивом заголовков предложений
 * @param {Array.<string>} array - массив заголовков предложений
 * @return {Array.<string>}
 */
 var createPropertyTypesArray = function (array) {
   var propertyTypesList = [];
   for (var i = 0; i < array.length; i++) {
-    var arraySplit = array[i].split(' ');
-
-    for (var j = 0; j < arraySplit.length; j++) {
-      if (arraySplit[j] === 'квартира') {
-        propertyTypesList[i] = 'flat';
-      }
-
-      if (arraySplit[j] === 'дворец') {
+    if (/квартира/.test(array[i])) {
+      propertyTypesList[i] = 'flat';
+    } else {
+      if (/дворец/.test(array[i])) {
         propertyTypesList[i] = 'palace';
-      }
-
-      if (arraySplit[j] === 'домик') {
-        propertyTypesList[i] = 'house';
-      }
-
-      if (arraySplit[j] === 'бунгало') {
-        propertyTypesList[i] = 'bungalo';
+      } else {
+        if (/домик/.test(array[i])) {
+          propertyTypesList[i] = 'house';
+        } else {
+          if (/бунгало/.test(array[i])) {
+            propertyTypesList[i] = 'bungalo';
+          }
+        }
       }
     }
   }
+
   return propertyTypesList;
 };
 
 /**
- * Создает массив строк случайной длинны
+ * Создает массив случайно расположенных элементов
  * @param {Array.<string>} array - массив с исходным списком строк
+ * @param {number} length - необходимая длина массива
  * @return {Array.<string>}
  */
-var createFeaturesArray = function (array) {
-  var arrayLength = Math.ceil(Math.random() * array.length);
-  var featuresArray = [];
-  for (var i = 0; i < arrayLength; i++) {
-    featuresArray[i] = array[i];
+var createRandomArray = function (array, length) {
+
+  var newArray = [];
+  for (var i = 0; i < length; i++) {
+    var elementIndex = Math.floor(generateRandomNumber(0, array.length));
+    if (newArray.indexOf(array[elementIndex]) !== -1) {
+      i = i - 1;
+      continue;
+    }
+
+    newArray[i] = array[elementIndex];
   }
-  return featuresArray;
+
+  return newArray;
 };
 
 /**
- * Создает массив случайным образом переставленных местами ссылок на фотографии
- * @param {Array.<string>} array - массив с исходным списком ссылок
- * @return {Array.<string>}
+ * Генерирует объявление
+ * @param {number} index - порядковый номер элемента из массива данных
+ * @param {Object} list - объект с массивами исходных данных
+ * @return {Object}
  */
-var createPhotosArray = function (array) {
-  var newFirstElementPosition = Math.floor(Math.random() * array.length);
-  var FirstElement = array[0];
-  array[0] = array[newFirstElementPosition];
-  array[newFirstElementPosition] = FirstElement;
+var generateSimilarAd = function (index, list) {
+  var locationX = Math.round(generateRandomNumber(xCord.MINIMUM, xCord.MAXIMUM));
+  var locationY = Math.round(generateRandomNumber(yCord.MINIMUM, yCord.MAXIMUM));
 
-  return array;
+  var similarAd = {
+    author: {
+      avatar: generateAvatarPath(index)
+    },
+
+    offer: {
+      title: list.propertyTitles[index],
+      address: locationX + ', ' + locationY,
+      price: Math.round(generateRandomNumber(price.MINIMUM, price.MAXIMUM)),
+      type: createPropertyTypesArray(list.propertyTitles)[index],
+      rooms: Math.ceil(generateRandomNumber(1, MAXIMUM_ROOM_COUNT)),
+      guests: Math.ceil(generateRandomNumber(1, MAXIMUM_GUEST_COUNT)),
+      checkin: list.times[Math.floor(generateRandomNumber(0, list.times.length))],
+      checkout: list.times[Math.floor(generateRandomNumber(0, list.times.length))],
+      features: createRandomArray(list.features, Math.ceil(generateRandomNumber(1, list.features.length))),
+      description: '',
+      photos: createRandomArray(list.photos, list.photos.length)
+    },
+
+    location: {
+      x: locationX,
+      y: locationY
+    }
+  };
+
+  return similarAd;
 };
 
 /**
  * Создает массив объектов похожих объявлений
  * @param {number} arrayLength - количество записываемых в массив объявлений
+ * @param {Object} list - объект, содержащий исходные параметры
  * @return {Array.<Object>}
  */
-var generateSimilarAds = function (arrayLength) {
-  var nearAds = [];
+var generateSimilarAds = function (arrayLength, list) {
+  var similarAds = [];
 
   for (var i = 0; i < arrayLength; i++) {
-    nearAds[i] = {
-      author: {},
-      location: {},
-      offer: {}
-    };
-
-    nearAds[i].author.avatar = AVATAR_URL + AVATAR_FIRST_NUMBER + (i + 1) + AVATAR_EXTENSION;
-    nearAds[i].location.x = Math.round(Math.random() * (MAXIMUM_X_CORD - MINIMUM_X_CORD) + MINIMUM_X_CORD);
-    nearAds[i].location.y = Math.round(Math.random() * (MAXIMUM_Y_CORD - MINIMUM_Y_CORD) + MINIMUM_Y_CORD);
-    nearAds[i].offer.title = propertyTitlesList[i];
-    nearAds[i].offer.address = String(nearAds[i].location.x) + ', ' + String(nearAds[i].location.y);
-    nearAds[i].offer.price = Math.round(Math.random() * (MAXIMUM_PRICE - MINIMUM_PRICE) + MINIMUM_PRICE);
-    nearAds[i].offer.type = createPropertyTypesArray(propertyTitlesList)[i];
-    nearAds[i].offer.rooms = Math.ceil(Math.random() * MAXIMUM_ROOM_COUNT);
-    nearAds[i].offer.guests = Math.ceil(Math.random() * MAXIMUM_GUEST_COUNT);
-    nearAds[i].offer.checkin = checkinTimesList[Math.floor(Math.random() * checkinTimesList.length)];
-    nearAds[i].offer.checkout = checkoutTimesList[Math.floor(Math.random() * checkoutTimesList.length)];
-    nearAds[i].offer.features = createFeaturesArray(featuresList);
-    nearAds[i].offer.description = ' ';
-    nearAds[i].offer.photos = createPhotosArray(photosList);
+    similarAds[i] = generateSimilarAd(i, list);
   }
 
-  return nearAds;
+  return similarAds;
 };
 
+/**
+ * Генерирует метку на карте из массива данных
+ * @param {Array.<Object>} array - массив с исходными данными
+ * @param {number} index - порядковый номер элемента в массиве
+ * @return {Node}
+ */
+var createMapPinFromArray = function (array, index) {
+  var mapPin = mapPinTemplate.cloneNode(true);
+  var mapPinImage = mapPin.querySelector('img');
+  mapPin.style.left = (array[index].location.x - pin.WIDTH / 2) + 'px';
+  mapPin.style.top = (array[index].location.y - pin.HEIGHT) + 'px';
+  mapPinImage.src = array[index].author.avatar;
+  mapPinImage.alt = array[index].offer.title;
+  return mapPin;
+};
 
 /**
  * Создает DOM-элементы, соответствующие меткам на карте
  * @param {Array.<Object>} array - массив объектов с исходными данными
+ * @return {Node}
  */
 var createMapPinsFromArray = function (array) {
-  var mapPins = document.querySelector('.map__pins');
-  var mapPinTemplate = document.querySelector('template').content.querySelector('.map__pin');
   var fragment = document.createDocumentFragment();
 
   for (var i = 0; i < array.length; i++) {
-    var mapPin = mapPinTemplate.cloneNode(true);
-    var mapPinImage = mapPin.querySelector('img');
-    mapPin.style.left = (array[i].location.x - PIN_WIDTH / 2) + 'px';
-    mapPin.style.top = (array[i].location.y - PIN_HEIGHT) + 'px';
-    mapPinImage.src = array[i].author.avatar;
-    mapPinImage.alt = array[i].offer.title;
-
-    fragment.appendChild(mapPin);
+    fragment.appendChild(createMapPinFromArray(array, i));
   }
 
-  mapPins.appendChild(fragment);
+  return fragment;
 };
 
+/**
+ * Генерирует элемент списка характеристик
+ * @param {string} text - текст, прибавляемый к классу элемента
+ * @return {Node}
+ */
+var createFeature = function (text) {
+  var mapNewFeature = document.createElement('li');
+  mapNewFeature.classList.add('popup__feature');
+  mapNewFeature.classList.add('popup__feature--' + text);
+  return mapNewFeature;
+};
+
+/**
+ * Генерирует список характеристик из массива
+ * @param {Array.<string>} array - массив с исходными данными
+ * @return {Node}
+ */
+var addFeatures = function (array) {
+  var mapOldFeature = featuresBlock.querySelectorAll('.popup__feature');
+  for (var i = 0; i < mapOldFeature.length; i++) {
+    mapOldFeature[i].remove();
+  }
+  var fragment = document.createDocumentFragment();
+  for (var j = 0; j < array.length; j++) {
+    fragment.appendChild(createFeature(array[j]));
+  }
+  return fragment;
+};
 
 /**
  * Создает DOM-элементы (набор изображений) и добавляет их в родительский блок
- * @param {Object} element - объект, содержащий данные для создания DOM-элементов
- * @param {Object} photoBlock - родительский блок
+ * @param {Array.<string>} element - объект, содержащий данные для создания DOM-элементов
+ * @return {Node}
  */
-var addPhotoImage = function (element, photoBlock) {
+var addPhotoImage = function (element) {
   var mapCardPhoto = photoBlock.querySelector('.popup__photo');
+  mapCardPhoto.remove();
+  var fragment = document.createDocumentFragment();
 
-  for (var i = 0; i < element.offer.photos.length; i++) {
-    if (i > 0) {
-      mapCardPhoto = mapCardPhoto.cloneNode(true);
-    }
+  for (var i = 0; i < element.length; i++) {
+    mapCardPhoto = mapCardPhoto.cloneNode(true);
+    mapCardPhoto.src = element[i];
 
-    mapCardPhoto.src = element.offer.photos[i];
-    photoBlock.appendChild(mapCardPhoto);
-  }
-};
-
-/**
- * Переводит строку с английского языка на русский
- * @param {string} element - строка, которую надо перевести
- * @return {string}
- */
-var translatingOfferType = function (element) {
-  if (element === 'flat') {
-    element = 'Квартира';
-  }
-  if (element === 'palace') {
-    element = 'Дворец';
-  }
-  if (element === 'house') {
-    element = 'Дом';
-  }
-  if (element === 'bungalo') {
-    element = 'Бунгало';
+    fragment.appendChild(mapCardPhoto);
   }
 
-  return element;
+  return fragment;
 };
 
 /**
  * Создает DOM-элемент объявления
  * @param {Object} element - объект, содержащий данные для создания DOM-элементов
+ * @return {Node}
  */
 var createMapCard = function (element) {
-  var map = document.querySelector('.map');
-  var mapCard = document.querySelector('template').content.querySelector('.map__card').cloneNode(true);
-
   mapCard.querySelector('.popup__title').textContent = element.offer.title;
   mapCard.querySelector('.popup__text--address').textContent = element.offer.adress;
   mapCard.querySelector('.popup__text--price').textContent = element.offer.price + '₽/ночь';
-  mapCard.querySelector('.popup__type').textContent = translatingOfferType(element.offer.type);
+  mapCard.querySelector('.popup__type').textContent = offerTypesTranslation[element.offer.type];
   mapCard.querySelector('.popup__text--capacity').textContent = element.offer.rooms + ' комнаты для ' + element.offer.guests + ' гостей';
   mapCard.querySelector('.popup__text--time').textContent = 'Заезд после ' + element.offer.checkin + ', выезд до ' + element.offer.checkout;
   mapCard.querySelector('.popup__description').textContent = element.offer.description;
-
-  addPhotoImage(element, mapCard.querySelector('.popup__photos'));
-
+  featuresBlock.appendChild(addFeatures(element.offer.features));
+  photoBlock.appendChild(addPhotoImage(element.offer.photos));
   mapCard.querySelector('.popup__avatar').textContent = element.author.avatar;
 
-  map.insertBefore(mapCard, map.querySelector('.map__filters-container'));
+  return mapCard;
 };
 
-var mapBlock = document.querySelector('.map');
-mapBlock.classList.remove('map--faded');
+/**
+ * Активирует карту на странице
+ */
+var initMap = function () {
+  map.classList.remove('map--faded');
 
-var similarAds = generateSimilarAds(NUMBER_OF_ADS);
+  var similarAds = generateSimilarAds(NUMBER_OF_ADS, characteristicsList);
 
-createMapPinsFromArray(similarAds);
-createMapCard(similarAds[0]);
+  mapPins.appendChild(createMapPinsFromArray(similarAds));
+  map.insertBefore(createMapCard(similarAds[0]), map.querySelector('.map__filters-container'));
+};
+
+initMap();
+
