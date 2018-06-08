@@ -55,6 +55,19 @@ var pinParams = {
 };
 
 /**
+ * @typedef {Objeсt} PhotosParams
+ * @property {number} WIDTH
+ * @property {number} HEIGHT
+ * @property {string} ALT
+ */
+var photoParams = {
+  WIDTH: 45,
+  HEIGHT: 40,
+  ALT: 'Фотография жилья',
+  CLASS: 'popup__photo'
+};
+
+/**
  * @typedef {Object} OfferParams
  * @property {Array.<string>} PROPERTY_TITLES
  * @property {Array.<string>} TIMES
@@ -311,14 +324,17 @@ var createFeature = function (text) {
 };
 
 /**
- * Создает DOM-элементы (набор изображений) и добавляет их в родительский блок
- * @param {Node} element - исходный DOM-элемент
+ * Создает DOM-элемент (изображение)
  * @param {string} link - адрес картинки
  * @return {Node}
  */
-var addPhotoImage = function (element, link) {
-  element = element.cloneNode(true);
+var createPhotoImage = function (link) {
+  var element = document.createElement('img');
   element.src = link;
+  element.style.width = photoParams.WIDTH + 'px';
+  element.style.height = photoParams.HEIGHT + 'px';
+  element.alt = photoParams.ALT;
+  element.classList.add(photoParams.CLASS);
   return element;
 };
 
@@ -326,7 +342,7 @@ var addPhotoImage = function (element, link) {
 /**
  * Возвращает слово с правильным окончанием
  * @param {number} number - число в соответствии с которым изменяется слово
- * @param {Array.<string>} array - массив вариантов написания слова
+ * @param {Array.<string>} array - массив вариантов написания слова в порядке: единственное число, множественное для number от 2 до 4 включительно, множественное для number от 5 включительно
  * @return {string}
  */
 var getDeclension = function (number, array) {
@@ -343,39 +359,37 @@ var getDeclension = function (number, array) {
 
 /**
  * Создает DOM-элемент объявления
- * @param {Ad} object - объект, содержащий данные для создания DOM-элементов
+ * @param {Ad} dataObject - объект, содержащий данные для создания DOM-элементов
  * @return {Node}
  */
-var createMapCard = function (object) {
+var createMapCard = function (dataObject) {
   var mapCard = mapCardTemplate.cloneNode(true);
   var featuresBlock = mapCard.querySelector('.popup__features');
   var photoBlock = mapCard.querySelector('.popup__photos');
-  mapCard.querySelector('.popup__title').textContent = object.offer.title;
-  mapCard.querySelector('.popup__text--address').textContent = object.offer.adress;
-  mapCard.querySelector('.popup__text--price').textContent = object.offer.price + '₽/ночь';
-  mapCard.querySelector('.popup__type').textContent = offerTypesTranslation[object.offer.type];
-  mapCard.querySelector('.popup__text--capacity').textContent = object.offer.rooms + ' ' + getDeclension(object.offer.rooms, ['комната', 'комнаты', 'комнат']) + ' для ' + object.offer.guests + ' ' + getDeclension(object.offer.guests, ['гостя', 'гостей']);
-  mapCard.querySelector('.popup__text--time').textContent = 'Заезд после ' + object.offer.checkin + ', выезд до ' + object.offer.checkout;
-  mapCard.querySelector('.popup__description').textContent = object.offer.description;
+  mapCard.querySelector('.popup__title').textContent = dataObject.offer.title;
+  mapCard.querySelector('.popup__text--address').textContent = dataObject.offer.adress;
+  mapCard.querySelector('.popup__text--price').textContent = dataObject.offer.price + '₽/ночь';
+  mapCard.querySelector('.popup__type').textContent = offerTypesTranslation[dataObject.offer.type];
+  mapCard.querySelector('.popup__text--capacity').textContent = dataObject.offer.rooms + ' ' + getDeclension(dataObject.offer.rooms, ['комната', 'комнаты', 'комнат']) + ' для ' + dataObject.offer.guests + ' ' + getDeclension(dataObject.offer.guests, ['гостя', 'гостей']);
+  mapCard.querySelector('.popup__text--time').textContent = 'Заезд после ' + dataObject.offer.checkin + ', выезд до ' + dataObject.offer.checkout;
+  mapCard.querySelector('.popup__description').textContent = dataObject.offer.description;
 
   var featureFragment = document.createDocumentFragment();
-  object.offer.features.forEach(function (item) {
+  dataObject.offer.features.forEach(function (item) {
     featureFragment.appendChild(createFeature(item));
   });
 
   featuresBlock.appendChild(featureFragment);
 
-  var photoItem = photoBlock.querySelector('.popup__photo');
-  photoItem.remove();
   var photoFragment = document.createDocumentFragment();
 
-  object.offer.photos.forEach(function (item) {
-    photoFragment.appendChild(addPhotoImage(photoItem, item));
+  dataObject.offer.photos.forEach(function (item) {
+    photoFragment.appendChild(createPhotoImage(item));
   });
 
   photoBlock.appendChild(photoFragment);
 
-  mapCard.querySelector('.popup__avatar').textContent = object.author.avatar;
+  mapCard.querySelector('.popup__avatar').textContent = dataObject.author.avatar;
 
   return mapCard;
 };
