@@ -324,26 +324,21 @@ var addPhotoImage = function (element, link) {
 
 
 /**
- * Генерирует строку текста с правильными окончаниями
- * @param {number} numberRooms - количество комнат
- * @param {number} numberGuests - количество гостей
+ * Возвращает слово с правильным окончанием
+ * @param {number} number - число в соответствии с которым изменяется слово
+ * @param {Array.<string>} array - массив вариантов написания слова
  * @return {string}
  */
-var getString = function (numberRooms, numberGuests) {
-  var rooms = ' комнат для ';
-  var guests = ' гостей';
+var getDeclension = function (number, array) {
+  var word = array[1];
 
-  if ((numberRooms + 10) % 10 === 1) {
-    rooms = ' комната для ';
-  } else if ((numberRooms + 10) % 10 > 1 && (numberRooms + 10) % 10 < 5) {
-    rooms = ' комнаты для ';
+  if ((number + 10) % 10 === 1) {
+    word = array[0];
+  } else if ((array[2]) && ((number + 10) % 10 >= 5)) {
+    word = array[2];
   }
 
-  if ((numberGuests + 10) % 10 === 1) {
-    guests = ' гостя';
-  }
-
-  return numberRooms + rooms + numberGuests + guests;
+  return word;
 };
 
 /**
@@ -359,23 +354,25 @@ var createMapCard = function (object) {
   mapCard.querySelector('.popup__text--address').textContent = object.offer.adress;
   mapCard.querySelector('.popup__text--price').textContent = object.offer.price + '₽/ночь';
   mapCard.querySelector('.popup__type').textContent = offerTypesTranslation[object.offer.type];
-  mapCard.querySelector('.popup__text--capacity').textContent = getString(object.offer.rooms, object.offer.guests);
+  mapCard.querySelector('.popup__text--capacity').textContent = object.offer.rooms + ' ' + getDeclension(object.offer.rooms, ['комната', 'комнаты', 'комнат']) + ' для ' + object.offer.guests + ' ' + getDeclension(object.offer.guests, ['гостя', 'гостей']);
   mapCard.querySelector('.popup__text--time').textContent = 'Заезд после ' + object.offer.checkin + ', выезд до ' + object.offer.checkout;
   mapCard.querySelector('.popup__description').textContent = object.offer.description;
 
   var featureFragment = document.createDocumentFragment();
-  for (var i = 0; i < object.offer.features.length; i++) {
-    featureFragment.appendChild(createFeature(object.offer.features[i]));
-  }
+  object.offer.features.forEach(function (item) {
+    featureFragment.appendChild(createFeature(item));
+  });
 
   featuresBlock.appendChild(featureFragment);
 
   var photoItem = photoBlock.querySelector('.popup__photo');
   photoItem.remove();
   var photoFragment = document.createDocumentFragment();
-  for (var j = 0; j < object.offer.photos.length; j++) {
-    photoFragment.appendChild(addPhotoImage(photoItem, object.offer.photos[j]));
-  }
+
+  object.offer.photos.forEach(function (item) {
+    photoFragment.appendChild(addPhotoImage(photoItem, item));
+  });
+
   photoBlock.appendChild(photoFragment);
 
   mapCard.querySelector('.popup__avatar').textContent = object.author.avatar;
