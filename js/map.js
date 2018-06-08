@@ -59,6 +59,7 @@ var pinParams = {
  * @property {number} WIDTH
  * @property {number} HEIGHT
  * @property {string} ALT
+ * @property {string} CLASS
  */
 var photoParams = {
   WIDTH: 45,
