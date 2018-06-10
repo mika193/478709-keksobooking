@@ -55,7 +55,7 @@ var pinParams = {
 };
 
 /**
- * @typedef {Objeсt} PhotosParams
+ * @typedef {Objeсt} PhotoParams
  * @property {number} WIDTH
  * @property {number} HEIGHT
  * @property {string} ALT
@@ -282,18 +282,17 @@ var getAds = function (arrayLength) {
 };
 
 /**
- * Генерирует метку на карте из массива данных
- * @param {Array.<Object>} array - массив с исходными данными
- * @param {number} index - порядковый номер элемента в массиве
+ * Генерирует метку на карте из объекта с данными
+ * @param {Ad} dataObject - объект с исходными данными
  * @return {Node}
  */
-var createMapPinFromArray = function (array, index) {
+var createMapPinFromArray = function (dataObject) {
   var mapPin = mapPinTemplate.cloneNode(true);
   var mapPinImage = mapPin.querySelector('img');
-  mapPin.style.left = (array[index].location.x - pinParams.WIDTH / 2) + 'px';
-  mapPin.style.top = (array[index].location.y - pinParams.HEIGHT) + 'px';
-  mapPinImage.src = array[index].author.avatar;
-  mapPinImage.alt = array[index].offer.title;
+  mapPin.style.left = (dataObject.location.x - pinParams.WIDTH / 2) + 'px';
+  mapPin.style.top = (dataObject.location.y - pinParams.HEIGHT) + 'px';
+  mapPinImage.src = dataObject.author.avatar;
+  mapPinImage.alt = dataObject.offer.title;
   return mapPin;
 };
 
@@ -305,9 +304,9 @@ var createMapPinFromArray = function (array, index) {
 var createPins = function (array) {
   var fragment = document.createDocumentFragment();
 
-  for (var i = 0; i < array.length; i++) {
-    fragment.appendChild(createMapPinFromArray(array, i));
-  }
+  array.forEach(function (item) {
+    fragment.appendChild(createMapPinFromArray(item));
+  });
 
   return fragment;
 };
@@ -375,20 +374,13 @@ var createMapCard = function (dataObject) {
   mapCard.querySelector('.popup__text--time').textContent = 'Заезд после ' + dataObject.offer.checkin + ', выезд до ' + dataObject.offer.checkout;
   mapCard.querySelector('.popup__description').textContent = dataObject.offer.description;
 
-  var featureFragment = document.createDocumentFragment();
   dataObject.offer.features.forEach(function (item) {
-    featureFragment.appendChild(createFeature(item));
+    featuresBlock.appendChild(createFeature(item));
   });
-
-  featuresBlock.appendChild(featureFragment);
-
-  var photoFragment = document.createDocumentFragment();
 
   dataObject.offer.photos.forEach(function (item) {
-    photoFragment.appendChild(createPhotoImage(item));
+    photoBlock.appendChild(createPhotoImage(item));
   });
-
-  photoBlock.appendChild(photoFragment);
 
   mapCard.querySelector('.popup__avatar').textContent = dataObject.author.avatar;
 
