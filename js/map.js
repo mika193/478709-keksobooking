@@ -346,15 +346,16 @@ var createPhotoImage = function (link) {
  * @return {string}
  */
 var getDeclension = function (number, array) {
-  var word = array[1];
-
-  if ((number + 10) % 10 === 1) {
-    word = array[0];
-  } else if ((array[2]) && ((number + 10) % 10 >= 5)) {
-    word = array[2];
+  if ((number % 100 < 20) && (number % 100 >= 5)) {
+    return array[2];
   }
-
-  return word;
+  if (number % 10 === 1) {
+    return array[0];
+  } else if ((number % 10 > 1) && (number % 10 < 5)) {
+    return array[1];
+  } else {
+    return array[2];
+  }
 };
 
 /**
@@ -370,7 +371,7 @@ var createMapCard = function (dataObject) {
   mapCard.querySelector('.popup__text--address').textContent = dataObject.offer.adress;
   mapCard.querySelector('.popup__text--price').textContent = dataObject.offer.price + '₽/ночь';
   mapCard.querySelector('.popup__type').textContent = offerTypesTranslation[dataObject.offer.type];
-  mapCard.querySelector('.popup__text--capacity').textContent = dataObject.offer.rooms + ' ' + getDeclension(dataObject.offer.rooms, ['комната', 'комнаты', 'комнат']) + ' для ' + dataObject.offer.guests + ' ' + getDeclension(dataObject.offer.guests, ['гостя', 'гостей']);
+  mapCard.querySelector('.popup__text--capacity').textContent = dataObject.offer.rooms + ' ' + getDeclension(dataObject.offer.rooms, ['комната', 'комнаты', 'комнат']) + ' для ' + dataObject.offer.guests + ' ' + getDeclension(dataObject.offer.guests, ['гостя', 'гостей', 'гостей']);
   mapCard.querySelector('.popup__text--time').textContent = 'Заезд после ' + dataObject.offer.checkin + ', выезд до ' + dataObject.offer.checkout;
   mapCard.querySelector('.popup__description').textContent = dataObject.offer.description;
 
@@ -400,4 +401,3 @@ var initMap = function () {
 };
 
 initMap();
-
