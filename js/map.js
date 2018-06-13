@@ -45,13 +45,23 @@ var priceParams = {
 };
 
 /**
- * @typedef {Objeсt} PinCordParams
+ * @typedef {Objeсt} PinParams
  * @property {number} WIDTH
  * @property {number} HEIGHT
  */
 var pinParams = {
   WIDTH: 50,
   HEIGHT: 70
+};
+
+/**
+ * @typedef {Objeсt} MainPinParams
+ * @property {number} WIDTH
+ * @property {number} HEIGHT
+ */
+var mainPinParams = {
+  WIDTH: 65,
+  HEIGHT: 65
 };
 
 /**
@@ -128,6 +138,10 @@ var mapTemplate = document.querySelector('template');
 var mapPinTemplate = mapTemplate.content.querySelector('.map__pin');
 var map = document.querySelector('.map');
 var mapCardTemplate = mapTemplate.content.querySelector('.map__card');
+var noticeForm = document.querySelector('.ad-form');
+var noticeFormFieldsets = noticeForm.querySelectorAll('fieldset');
+var mainPin = document.querySelector('.map__pin--main');
+var adressField = noticeForm.querySelector('#address');
 
 /**
  * Генерирует случайное число в заданном диапазоне
@@ -272,13 +286,13 @@ var getAd = function (index) {
  * @return {Array.<Ad>}
  */
 var getAds = function (arrayLength) {
-  var similarAds = [];
+  var ads = [];
 
   for (var i = 0; i < arrayLength; i++) {
-    similarAds.push(getAd(i));
+    ads.push(getAd(i));
   }
 
-  return similarAds;
+  return ads;
 };
 
 /**
@@ -367,6 +381,7 @@ var createMapCard = function (dataObject) {
   var mapCard = mapCardTemplate.cloneNode(true);
   var featuresBlock = mapCard.querySelector('.popup__features');
   var photoBlock = mapCard.querySelector('.popup__photos');
+  mapCard.querySelector('.popup__avatar').src = dataObject.author.avatar;
   mapCard.querySelector('.popup__title').textContent = dataObject.offer.title;
   mapCard.querySelector('.popup__text--address').textContent = dataObject.offer.adress;
   mapCard.querySelector('.popup__text--price').textContent = dataObject.offer.price + '₽/ночь';
@@ -393,11 +408,105 @@ var createMapCard = function (dataObject) {
  */
 var initMap = function () {
   map.classList.remove('map--faded');
-
-  var similarAds = getAds(NUMBER_OF_ADS);
-
   mapPins.appendChild(createPins(similarAds));
-  map.insertBefore(createMapCard(similarAds[0]), map.querySelector('.map__filters-container'));
 };
 
-initMap();
+/**
+ * Делает форму объявления недоступной
+ */
+var disableForm = function () {
+  noticeForm.classList.add('ad-form--disabled');
+  for (var i = 0; i < noticeFormFieldsets.length; i++) {
+    noticeFormFieldsets[i].setAttribute('disabled', 'disabled');
+  }
+};
+
+/**
+ * Делает форму объявления доступной
+ */
+var initForm = function () {
+  noticeForm.classList.remove('ad-form--disabled');
+  for (var i = 0; i < noticeFormFieldsets.length; i++) {
+    noticeFormFieldsets[i].removeAttribute('disabled', 'disabled');
+  }
+};
+
+/**
+ * Передает координаты метки в поле Адрес
+ * @param {number} topGap - смещение по оси y c учетом высоты элемента;
+ */
+var setAdressDisabledValue = function (topGap) {
+  var leftCord = Number(mainPin.style.left.split('px')[0]) - mainPinParams.WIDTH / 2;
+  var topCord = Number(mainPin.style.top.split('px')[0]) - topGap;
+  adressField.value = leftCord + ', ' + topCord;
+};
+
+/**
+ * Удаляет отображенное объявление
+ */
+var deliteDisplayedAD = function () {
+  map.removeChild(map.querySelector('.map__card'));
+  document.removeEventListener('keydown', onPopupEscPress);
+};
+
+/**
+ * Генерирует текст объявления в соответствии с кликнутой меткой
+ * @param {Node} element - метка, на которой осуществлен клик
+ * @param {Array.<Node>} array - массив меток, отрисованных на странице
+ */
+var getAdForDisplay = function (element, array) {
+  if (map.querySelector('.map__card')) {
+    deliteDisplayedAD();
+  }
+  for (var i = 1; i < array.length; i++) {
+    if (element === array[i]) {
+      map.insertBefore(createMapCard(similarAds[i - 1]), map.querySelector('.map__filters-container'));
+    }
+  }
+};
+
+/**
+ * Закрывает окно объявления при нажатии Esc
+ * @param {Object} evt - объект с параметрами события нажатия на кнопку
+ */
+var onPopupEscPress = function (evt) {
+  if (evt.keyCode === 27) {
+    deliteDisplayedAD();
+  }
+};
+
+/**
+ * отображает объявление при нажатии на метку на карте
+ */
+var displayAd = function () {
+  var pins = document.querySelectorAll('.map__pin');
+  for (var i = 1; i < pins.length; i++) {
+    pins[i].addEventListener('click', function (evt) {
+      getAdForDisplay(evt.target, pins);
+      var popupCloseButton = map.querySelector('.popup__close');
+      popupCloseButton.addEventListener('click', function () {
+        deliteDisplayedAD();
+      });
+      document.addEventListener('keydown', onPopupEscPress);
+    });
+  }
+};
+
+/**
+ * Активирует страницу
+ */
+var initPage = function () {
+  disableForm();
+  setAdressDisabledValue(mainPinParams.HEIGHT / 2);
+
+  mainPin.addEventListener('mouseup', function () {
+    initMap();
+    initForm();
+    setAdressDisabledValue(mainPinParams.HEIGHT);
+    displayAd();
+  });
+};
+
+var similarAds = getAds(NUMBER_OF_ADS);
+initPage();
+
