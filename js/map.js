@@ -407,6 +407,12 @@ var createMapCard = function (dataObject) {
  * Активирует карту на странице
  */
 var initMap = function () {
+  var pins = mapPins.querySelectorAll('.map__pin');
+  if (pins) {
+    for (var i = 1; i < pins.length; i++) {
+      mapPins.removeChild(pins[i]);
+    }
+  }
   map.classList.remove('map--faded');
   mapPins.appendChild(createPins(similarAds));
 };
@@ -416,35 +422,43 @@ var initMap = function () {
  */
 var disableForm = function () {
   noticeForm.classList.add('ad-form--disabled');
-  for (var i = 0; i < noticeFormFieldsets.length; i++) {
-    noticeFormFieldsets[i].setAttribute('disabled', 'disabled');
-  }
+  noticeFormFieldsets.forEach(function (item) {
+    item.setAttribute('disabled', 'disabled');
+  });
 };
-
 /**
  * Делает форму объявления доступной
  */
 var initForm = function () {
   noticeForm.classList.remove('ad-form--disabled');
-  for (var i = 0; i < noticeFormFieldsets.length; i++) {
-    noticeFormFieldsets[i].removeAttribute('disabled', 'disabled');
-  }
+  noticeFormFieldsets.forEach(function (item) {
+    item.removeAttribute('disabled', 'disabled');
+  });
 };
 
 /**
  * Передает координаты метки в поле Адрес
- * @param {number} topGap - смещение по оси y c учетом высоты элемента;
+ * @param {number} leftCord - координата x
+ * @param {number} topCord - координата y
  */
-var setAdressDisabledValue = function (topGap) {
-  var leftCord = Number(mainPin.style.left.split('px')[0]) - mainPinParams.WIDTH / 2;
-  var topCord = Number(mainPin.style.top.split('px')[0]) - topGap;
+var setAdressDisabledValue = function (leftCord, topCord) {
   adressField.value = leftCord + ', ' + topCord;
+};
+
+/**
+ * Вычисляет координаты метки на карте
+ * @param {string} string - строка с исходными координатами
+ * @param {number} gap - шаг изменения координат
+ * @return {number}
+ */
+var getPinCord = function (string, gap) {
+  return Number(string.slice(0, string.search(/px/))) - gap;
 };
 
 /**
  * Удаляет отображенное объявление
  */
-var deliteDisplayedAD = function () {
+var deleteDisplayedAD = function () {
   map.removeChild(map.querySelector('.map__card'));
   document.removeEventListener('keydown', onPopupEscPress);
 };
@@ -456,7 +470,7 @@ var deliteDisplayedAD = function () {
  */
 var getAdForDisplay = function (element, array) {
   if (map.querySelector('.map__card')) {
-    deliteDisplayedAD();
+    deleteDisplayedAD();
   }
   for (var i = 1; i < array.length; i++) {
     if (element === array[i]) {
@@ -471,8 +485,22 @@ var getAdForDisplay = function (element, array) {
  */
 var onPopupEscPress = function (evt) {
   if (evt.keyCode === 27) {
-    deliteDisplayedAD();
+    deleteDisplayedAD();
   }
+};
+
+/**
+ * Открывает попап с объявлением
+ * @param {Node} element - метка, на которой осуществлен клик
+ * @param {Array.<Node>} array - массив меток, отрисованных на странице
+ */
+var openPopup = function (element, array) {
+  getAdForDisplay(element, array);
+  var popupCloseButton = map.querySelector('.popup__close');
+  popupCloseButton.addEventListener('click', function () {
+    deleteDisplayedAD();
+  });
+  document.addEventListener('keydown', onPopupEscPress);
 };
 
 /**
@@ -482,12 +510,7 @@ var displayAd = function () {
   var pins = document.querySelectorAll('.map__pin');
   for (var i = 1; i < pins.length; i++) {
     pins[i].addEventListener('click', function (evt) {
-      getAdForDisplay(evt.target, pins);
-      var popupCloseButton = map.querySelector('.popup__close');
-      popupCloseButton.addEventListener('click', function () {
-        deliteDisplayedAD();
-      });
-      document.addEventListener('keydown', onPopupEscPress);
+      openPopup(evt.target, pins);
     });
   }
 };
@@ -497,12 +520,12 @@ var displayAd = function () {
  */
 var initPage = function () {
   disableForm();
-  setAdressDisabledValue(mainPinParams.HEIGHT / 2);
+  setAdressDisabledValue(getPinCord(getComputedStyle(mainPin).left, mainPinParams.WIDTH / 2), getPinCord(getComputedStyle(mainPin).top, mainPinParams.HEIGHT / 2));
 
   mainPin.addEventListener('mouseup', function () {
     initMap();
     initForm();
-    setAdressDisabledValue(mainPinParams.HEIGHT);
+    setAdressDisabledValue(getPinCord(getComputedStyle(mainPin).left, mainPinParams.WIDTH / 2), getPinCord(getComputedStyle(mainPin).top, mainPinParams.HEIGHT));
     displayAd();
   });
 };
