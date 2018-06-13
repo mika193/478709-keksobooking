@@ -319,10 +319,33 @@ var createPins = function (array) {
   var fragment = document.createDocumentFragment();
 
   array.forEach(function (item) {
-    fragment.appendChild(createMapPinFromArray(item));
+    var element = createMapPinFromArray(item);
+
+    element.addEventListener('click', function () {
+      openPopup(item);
+    });
+
+    element.classList.add('map__pin--hidden');
+    fragment.appendChild(element);
   });
 
   return fragment;
+};
+
+/**
+ * Открывает попап с объявлением, соответствующим нажатой метке
+ * @param {Ad} item - массив с исходными данными
+ */
+var openPopup = function (item) {
+  if (map.querySelector('.map__card')) {
+    deleteDisplayedAD();
+  }
+  map.insertBefore(createMapCard(item), map.querySelector('.map__filters-container'));
+  var popupCloseButton = map.querySelector('.popup__close');
+  popupCloseButton.addEventListener('click', function () {
+    deleteDisplayedAD();
+  });
+  document.addEventListener('keydown', onPopupEscPress);
 };
 
 /**
@@ -410,11 +433,10 @@ var initMap = function () {
   var pins = mapPins.querySelectorAll('.map__pin');
   if (pins) {
     for (var i = 1; i < pins.length; i++) {
-      mapPins.removeChild(pins[i]);
+      pins[i].classList.remove('map__pin--hidden');
     }
   }
   map.classList.remove('map--faded');
-  mapPins.appendChild(createPins(similarAds));
 };
 
 /**
@@ -464,22 +486,6 @@ var deleteDisplayedAD = function () {
 };
 
 /**
- * Генерирует текст объявления в соответствии с кликнутой меткой
- * @param {Node} element - метка, на которой осуществлен клик
- * @param {Array.<Node>} array - массив меток, отрисованных на странице
- */
-var getAdForDisplay = function (element, array) {
-  if (map.querySelector('.map__card')) {
-    deleteDisplayedAD();
-  }
-  for (var i = 1; i < array.length; i++) {
-    if (element === array[i]) {
-      map.insertBefore(createMapCard(similarAds[i - 1]), map.querySelector('.map__filters-container'));
-    }
-  }
-};
-
-/**
  * Закрывает окно объявления при нажатии Esc
  * @param {Object} evt - объект с параметрами события нажатия на кнопку
  */
@@ -490,43 +496,20 @@ var onPopupEscPress = function (evt) {
 };
 
 /**
- * Открывает попап с объявлением
- * @param {Node} element - метка, на которой осуществлен клик
- * @param {Array.<Node>} array - массив меток, отрисованных на странице
- */
-var openPopup = function (element, array) {
-  getAdForDisplay(element, array);
-  var popupCloseButton = map.querySelector('.popup__close');
-  popupCloseButton.addEventListener('click', function () {
-    deleteDisplayedAD();
-  });
-  document.addEventListener('keydown', onPopupEscPress);
-};
-
-/**
- * отображает объявление при нажатии на метку на карте
- */
-var displayAd = function () {
-  var pins = document.querySelectorAll('.map__pin');
-  for (var i = 1; i < pins.length; i++) {
-    pins[i].addEventListener('click', function (evt) {
-      openPopup(evt.target, pins);
-    });
-  }
-};
-
-/**
  * Активирует страницу
  */
 var initPage = function () {
   disableForm();
-  setAdressDisabledValue(getPinCord(getComputedStyle(mainPin).left, mainPinParams.WIDTH / 2), getPinCord(getComputedStyle(mainPin).top, mainPinParams.HEIGHT / 2));
+  mapPins.appendChild(createPins(similarAds));
+  var leftCord = getPinCord(getComputedStyle(mainPin).left, mainPinParams.WIDTH / 2);
+  var topCord = getPinCord(getComputedStyle(mainPin).top, mainPinParams.HEIGHT / 2);
+  setAdressDisabledValue(leftCord, topCord);
 
   mainPin.addEventListener('mouseup', function () {
     initMap();
     initForm();
-    setAdressDisabledValue(getPinCord(getComputedStyle(mainPin).left, mainPinParams.WIDTH / 2), getPinCord(getComputedStyle(mainPin).top, mainPinParams.HEIGHT));
-    displayAd();
+    topCord = getPinCord(getComputedStyle(mainPin).top, mainPinParams.HEIGHT);
+    setAdressDisabledValue(leftCord, topCord);
   });
 };
 

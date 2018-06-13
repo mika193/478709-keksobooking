@@ -176,6 +176,10 @@ fieldset {
   background: none;
 }
 
+.map__pin--hidden {
+  display: none;
+}
+
 .map__pin:focus {
   outline: none;
   -webkit-filter: drop-shadow(0 0 5px red);
