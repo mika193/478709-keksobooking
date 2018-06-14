@@ -1,8 +1,15 @@
 'use strict';
 
+/** @constant {number} */
 var NUMBER_OF_ADS = 8;
+
+/** @constant {number} */
 var MAXIMUM_ROOM_COUNT = 5;
+
+/** @constant {number} */
 var MAXIMUM_GUEST_COUNT = 100;
+
+/** @constant {number} */
 var ESC_CODE = 27;
 
 /**
@@ -145,7 +152,11 @@ var noticeFormFieldsets = noticeForm.querySelectorAll('fieldset');
 var mainPin = document.querySelector('.map__pin--main');
 var adressField = noticeForm.querySelector('#address');
 var mapFilters = map.querySelector('.map__filters-container');
-var mapCardActive;
+var mainPinCordX = mainPin.offsetLeft - mainPinParams.WIDTH / 2;
+var mainPinCordY = mainPin.offsetTop - mainPinParams.HEIGHT / 2;
+var activatedPage = false;
+var activeCard;
+var activePin;
 
 /**
  * Генерирует случайное число в заданном диапазоне
@@ -311,8 +322,8 @@ var createMapPinFromArray = function (dataObject) {
   mapPin.style.top = (dataObject.location.y - pinParams.HEIGHT) + 'px';
   mapPinImage.src = dataObject.author.avatar;
   mapPinImage.alt = dataObject.offer.title;
-  mapPin.addEventListener('click', function () {
-    openPopup(dataObject);
+  mapPin.addEventListener('click', function (evt) {
+    openPopup(evt.currentTarget, dataObject);
   });
   return mapPin;
 };
@@ -334,17 +345,23 @@ var createPins = function (array) {
 
 /**
  * Открывает попап с объявлением, соответствующим нажатой метке
+ * @param {Node} element - элемент, на котором произошел клик
  * @param {Ad} dataObject - объект с исходными данными
  */
-var openPopup = function (dataObject) {
+var openPopup = function (element, dataObject) {
   var card = createMapCard(dataObject);
-  if (!mapCardActive) {
+  if (activePin) {
+    activePin.classList.remove('map__pin--active');
+  }
+  if (!activeCard) {
     map.insertBefore(card, mapFilters);
-  } else if ((mapCardActive) && (mapCardActive !== card)) {
+  } else if ((activeCard) && (activePin !== element)) {
     deleteDisplayedAD();
     map.insertBefore(card, mapFilters);
   }
-  mapCardActive = map.querySelector('.map__card');
+  activeCard = map.querySelector('.map__card');
+  activePin = element;
+  activePin.classList.add('map__pin--active');
 };
 
 /**
@@ -457,30 +474,22 @@ var initForm = function () {
 
 /**
  * Передает координаты метки в поле Адрес
- * @param {number} leftCord - координата x
- * @param {number} topCord - координата y
+ * @param {number} x - координата x
+ * @param {number} y - координата y
  */
-var setAdressDisabledValue = function (leftCord, topCord) {
-  adressField.value = leftCord + ', ' + topCord;
-};
-
-/**
- * Вычисляет координаты метки на карте
- * @param {number} cord - строка с исходными координатами
- * @param {number} gap - шаг изменения координат
- * @return {number}
- */
-var getPinCord = function (cord, gap) {
-  return cord - gap;
+var setAdressValue = function (x, y) {
+  adressField.value = x + ', ' + y;
 };
 
 /**
  * Удаляет отображенное объявление
  */
 var deleteDisplayedAD = function () {
-  map.removeChild(mapCardActive);
+  map.removeChild(activeCard);
   document.removeEventListener('keydown', onPopupEscPress);
-  mapCardActive = null;
+  activeCard = null;
+  activePin.classList.remove('map__pin--active');
+  activePin = null;
 };
 
 var onPopupEscPress = function (evt) {
@@ -491,18 +500,16 @@ var onPopupEscPress = function (evt) {
 
 /**
  * Активирует элементы на странице
- * @param {number} leftCord - x-координата главной метки
- * @param {number} topCord - y-координата главной метки
+ * @param {number} x - x-координата главной метки
  */
-var initPageElements = function (leftCord, topCord) {
-  if (/map--faded/.test(map.className)) {
+var initPageElements = function () {
+  if (!activatedPage) {
     initMap();
-  }
-  if (/ad-form--disabled/.test(noticeForm.className)) {
     initForm();
+    activatedPage = true;
   }
-  topCord = getPinCord(mainPin.offsetTop, mainPinParams.ACTIVE_HEIGHT);
-  setAdressDisabledValue(leftCord, topCord);
+  mainPinCordY = mainPin.offsetTop - mainPinParams.ACTIVE_HEIGHT;
+  setAdressValue(mainPinCordX, mainPinCordY);
 };
 
 /**
@@ -510,12 +517,10 @@ var initPageElements = function (leftCord, topCord) {
  */
 var initPage = function () {
   disableForm();
-  var leftCord = getPinCord(mainPin.offsetLeft, mainPinParams.WIDTH / 2);
-  var topCord = getPinCord(mainPin.offsetTop, mainPinParams.HEIGHT / 2);
-  setAdressDisabledValue(leftCord, topCord);
+  setAdressValue(mainPinCordX, mainPinCordY);
 
   mainPin.addEventListener('mouseup', function () {
-    initPageElements(leftCord, topCord);
+    initPageElements();
   });
 };
 
