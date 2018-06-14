@@ -1,8 +1,16 @@
 'use strict';
 
+/** @constant {number} */
 var NUMBER_OF_ADS = 8;
+
+/** @constant {number} */
 var MAXIMUM_ROOM_COUNT = 5;
+
+/** @constant {number} */
 var MAXIMUM_GUEST_COUNT = 100;
+
+/** @constant {number} */
+var ESC_CODE = 27;
 
 /**
  * @typedef {Object} AvatarParams
@@ -45,13 +53,24 @@ var priceParams = {
 };
 
 /**
- * @typedef {Objeсt} PinCordParams
+ * @typedef {Objeсt} PinParams
  * @property {number} WIDTH
  * @property {number} HEIGHT
  */
 var pinParams = {
   WIDTH: 50,
   HEIGHT: 70
+};
+
+/**
+ * @typedef {Objeсt} MainPinParams
+ * @property {number} WIDTH
+ * @property {number} HEIGHT
+ */
+var mainPinParams = {
+  WIDTH: 65,
+  HEIGHT: 65,
+  ACTIVE_HEIGHT: 87
 };
 
 /**
@@ -128,6 +147,16 @@ var mapTemplate = document.querySelector('template');
 var mapPinTemplate = mapTemplate.content.querySelector('.map__pin');
 var map = document.querySelector('.map');
 var mapCardTemplate = mapTemplate.content.querySelector('.map__card');
+var noticeForm = document.querySelector('.ad-form');
+var noticeFormFieldsets = noticeForm.querySelectorAll('fieldset');
+var mainPin = document.querySelector('.map__pin--main');
+var adressField = noticeForm.querySelector('#address');
+var mapFilters = map.querySelector('.map__filters-container');
+var mainPinCordX = mainPin.offsetLeft - mainPinParams.WIDTH / 2;
+var mainPinCordY = mainPin.offsetTop - mainPinParams.HEIGHT / 2;
+var activatedPage = false;
+var activeCard;
+var activePin;
 
 /**
  * Генерирует случайное число в заданном диапазоне
@@ -272,13 +301,13 @@ var getAd = function (index) {
  * @return {Array.<Ad>}
  */
 var getAds = function (arrayLength) {
-  var similarAds = [];
+  var ads = [];
 
   for (var i = 0; i < arrayLength; i++) {
-    similarAds.push(getAd(i));
+    ads.push(getAd(i));
   }
 
-  return similarAds;
+  return ads;
 };
 
 /**
@@ -293,6 +322,12 @@ var createMapPinFromArray = function (dataObject) {
   mapPin.style.top = (dataObject.location.y - pinParams.HEIGHT) + 'px';
   mapPinImage.src = dataObject.author.avatar;
   mapPinImage.alt = dataObject.offer.title;
+  mapPin.addEventListener('click', function (evt) {
+    if (activePin !== evt.currentTarget) {
+      openPopup(evt.currentTarget, dataObject);
+      pinClassAd(evt.currentTarget);
+    }
+  });
   return mapPin;
 };
 
@@ -309,6 +344,40 @@ var createPins = function (array) {
   });
 
   return fragment;
+};
+
+/**
+ * Открывает попап с объявлением, соответствующим нажатой метке
+ * @param {Node} element - элемент, на котором произошел клик
+ * @param {Ad} dataObject - объект с исходными данными
+ */
+var openPopup = function (element, dataObject) {
+  if (activeCard) {
+    deleteDisplayedAD();
+  }
+  var card = createMapCard(dataObject);
+  map.insertBefore(card, mapFilters);
+  activeCard = card;
+};
+
+/**
+ * Добавляет класс активному пин
+ * @param {Node} element
+ */
+var pinClassAd = function (element) {
+  if (activePin) {
+    pinClassRemove();
+  }
+  activePin = element;
+  activePin.classList.add('map__pin--active');
+};
+
+/**
+ * Удаляет класс у неактивного пин
+ */
+var pinClassRemove = function () {
+  activePin.classList.remove('map__pin--active');
+  activePin = null;
 };
 
 /**
@@ -367,6 +436,7 @@ var createMapCard = function (dataObject) {
   var mapCard = mapCardTemplate.cloneNode(true);
   var featuresBlock = mapCard.querySelector('.popup__features');
   var photoBlock = mapCard.querySelector('.popup__photos');
+  mapCard.querySelector('.popup__avatar').src = dataObject.author.avatar;
   mapCard.querySelector('.popup__title').textContent = dataObject.offer.title;
   mapCard.querySelector('.popup__text--address').textContent = dataObject.offer.adress;
   mapCard.querySelector('.popup__text--price').textContent = dataObject.offer.price + '₽/ночь';
@@ -384,7 +454,11 @@ var createMapCard = function (dataObject) {
   });
 
   mapCard.querySelector('.popup__avatar').textContent = dataObject.author.avatar;
-
+  mapCard.querySelector('.popup__close').addEventListener('click', function () {
+    deleteDisplayedAD();
+    pinClassRemove();
+  });
+  document.addEventListener('keydown', onPopupEscPress);
   return mapCard;
 };
 
@@ -392,12 +466,79 @@ var createMapCard = function (dataObject) {
  * Активирует карту на странице
  */
 var initMap = function () {
-  map.classList.remove('map--faded');
-
-  var similarAds = getAds(NUMBER_OF_ADS);
-
   mapPins.appendChild(createPins(similarAds));
-  map.insertBefore(createMapCard(similarAds[0]), map.querySelector('.map__filters-container'));
+  map.classList.remove('map--faded');
 };
 
-initMap();
+/**
+ * Делает форму объявления недоступной
+ */
+var disableForm = function () {
+  noticeForm.classList.add('ad-form--disabled');
+  noticeFormFieldsets.forEach(function (item) {
+    item.setAttribute('disabled', 'disabled');
+  });
+};
+/**
+ * Делает форму объявления доступной
+ */
+var initForm = function () {
+  noticeForm.classList.remove('ad-form--disabled');
+  noticeFormFieldsets.forEach(function (item) {
+    item.removeAttribute('disabled');
+  });
+};
+
+/**
+ * Передает координаты метки в поле Адрес
+ * @param {number} x - координата x
+ * @param {number} y - координата y
+ */
+var setAdressValue = function (x, y) {
+  adressField.value = x + ', ' + y;
+};
+
+/**
+ * Удаляет отображенное объявление
+ */
+var deleteDisplayedAD = function () {
+  map.removeChild(activeCard);
+  document.removeEventListener('keydown', onPopupEscPress);
+  activeCard = null;
+};
+
+var onPopupEscPress = function (evt) {
+  if (evt.keyCode === ESC_CODE) {
+    deleteDisplayedAD();
+  }
+};
+
+/**
+ * Активирует элементы на странице
+ * @param {number} x - x-координата главной метки
+ */
+var initPageElements = function () {
+  if (!activatedPage) {
+    initMap();
+    initForm();
+    activatedPage = true;
+  }
+  mainPinCordY = mainPin.offsetTop - mainPinParams.ACTIVE_HEIGHT;
+  setAdressValue(mainPinCordX, mainPinCordY);
+};
+
+/**
+ * Активирует страницу
+ */
+var initPage = function () {
+  disableForm();
+  setAdressValue(mainPinCordX, mainPinCordY);
+
+  mainPin.addEventListener('mouseup', function () {
+    initPageElements();
+  });
+};
+
+var similarAds = getAds(NUMBER_OF_ADS);
+initPage();
+
