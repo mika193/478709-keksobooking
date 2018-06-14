@@ -3,6 +3,7 @@
 var NUMBER_OF_ADS = 8;
 var MAXIMUM_ROOM_COUNT = 5;
 var MAXIMUM_GUEST_COUNT = 100;
+var ESC_CODE = 27;
 
 /**
  * @typedef {Object} AvatarParams
@@ -61,7 +62,8 @@ var pinParams = {
  */
 var mainPinParams = {
   WIDTH: 65,
-  HEIGHT: 65
+  HEIGHT: 65,
+  ACTIVE_HEIGHT: 87
 };
 
 /**
@@ -142,6 +144,8 @@ var noticeForm = document.querySelector('.ad-form');
 var noticeFormFieldsets = noticeForm.querySelectorAll('fieldset');
 var mainPin = document.querySelector('.map__pin--main');
 var adressField = noticeForm.querySelector('#address');
+var mapFilters = map.querySelector('.map__filters-container');
+var mapCardActive;
 
 /**
  * Генерирует случайное число в заданном диапазоне
@@ -307,6 +311,9 @@ var createMapPinFromArray = function (dataObject) {
   mapPin.style.top = (dataObject.location.y - pinParams.HEIGHT) + 'px';
   mapPinImage.src = dataObject.author.avatar;
   mapPinImage.alt = dataObject.offer.title;
+  mapPin.addEventListener('click', function () {
+    openPopup(dataObject);
+  });
   return mapPin;
 };
 
@@ -319,14 +326,7 @@ var createPins = function (array) {
   var fragment = document.createDocumentFragment();
 
   array.forEach(function (item) {
-    var element = createMapPinFromArray(item);
-
-    element.addEventListener('click', function () {
-      openPopup(item);
-    });
-
-    element.classList.add('map__pin--hidden');
-    fragment.appendChild(element);
+    fragment.appendChild(createMapPinFromArray(item));
   });
 
   return fragment;
@@ -334,18 +334,17 @@ var createPins = function (array) {
 
 /**
  * Открывает попап с объявлением, соответствующим нажатой метке
- * @param {Ad} item - массив с исходными данными
+ * @param {Ad} dataObject - объект с исходными данными
  */
-var openPopup = function (item) {
-  if (map.querySelector('.map__card')) {
+var openPopup = function (dataObject) {
+  var card = createMapCard(dataObject);
+  if (!mapCardActive) {
+    map.insertBefore(card, mapFilters);
+  } else if ((mapCardActive) && (mapCardActive !== card)) {
     deleteDisplayedAD();
+    map.insertBefore(card, mapFilters);
   }
-  map.insertBefore(createMapCard(item), map.querySelector('.map__filters-container'));
-  var popupCloseButton = map.querySelector('.popup__close');
-  popupCloseButton.addEventListener('click', function () {
-    deleteDisplayedAD();
-  });
-  document.addEventListener('keydown', onPopupEscPress);
+  mapCardActive = map.querySelector('.map__card');
 };
 
 /**
@@ -422,7 +421,10 @@ var createMapCard = function (dataObject) {
   });
 
   mapCard.querySelector('.popup__avatar').textContent = dataObject.author.avatar;
-
+  mapCard.querySelector('.popup__close').addEventListener('click', function () {
+    deleteDisplayedAD();
+  });
+  document.addEventListener('keydown', onPopupEscPress);
   return mapCard;
 };
 
@@ -430,12 +432,7 @@ var createMapCard = function (dataObject) {
  * Активирует карту на странице
  */
 var initMap = function () {
-  var pins = mapPins.querySelectorAll('.map__pin');
-  if (pins) {
-    for (var i = 1; i < pins.length; i++) {
-      pins[i].classList.remove('map__pin--hidden');
-    }
-  }
+  mapPins.appendChild(createPins(similarAds));
   map.classList.remove('map--faded');
 };
 
@@ -454,7 +451,7 @@ var disableForm = function () {
 var initForm = function () {
   noticeForm.classList.remove('ad-form--disabled');
   noticeFormFieldsets.forEach(function (item) {
-    item.removeAttribute('disabled', 'disabled');
+    item.removeAttribute('disabled');
   });
 };
 
@@ -469,30 +466,43 @@ var setAdressDisabledValue = function (leftCord, topCord) {
 
 /**
  * Вычисляет координаты метки на карте
- * @param {string} string - строка с исходными координатами
+ * @param {number} cord - строка с исходными координатами
  * @param {number} gap - шаг изменения координат
  * @return {number}
  */
-var getPinCord = function (string, gap) {
-  return Number(string.slice(0, string.search(/px/))) - gap;
+var getPinCord = function (cord, gap) {
+  return cord - gap;
 };
 
 /**
  * Удаляет отображенное объявление
  */
 var deleteDisplayedAD = function () {
-  map.removeChild(map.querySelector('.map__card'));
+  map.removeChild(mapCardActive);
   document.removeEventListener('keydown', onPopupEscPress);
+  mapCardActive = null;
+};
+
+var onPopupEscPress = function (evt) {
+  if (evt.keyCode === ESC_CODE) {
+    deleteDisplayedAD();
+  }
 };
 
 /**
- * Закрывает окно объявления при нажатии Esc
- * @param {Object} evt - объект с параметрами события нажатия на кнопку
+ * Активирует элементы на странице
+ * @param {number} leftCord - x-координата главной метки
+ * @param {number} topCord - y-координата главной метки
  */
-var onPopupEscPress = function (evt) {
-  if (evt.keyCode === 27) {
-    deleteDisplayedAD();
+var initPageElements = function (leftCord, topCord) {
+  if (/map--faded/.test(map.className)) {
+    initMap();
   }
+  if (/ad-form--disabled/.test(noticeForm.className)) {
+    initForm();
+  }
+  topCord = getPinCord(mainPin.offsetTop, mainPinParams.ACTIVE_HEIGHT);
+  setAdressDisabledValue(leftCord, topCord);
 };
 
 /**
@@ -500,16 +510,12 @@ var onPopupEscPress = function (evt) {
  */
 var initPage = function () {
   disableForm();
-  mapPins.appendChild(createPins(similarAds));
-  var leftCord = getPinCord(getComputedStyle(mainPin).left, mainPinParams.WIDTH / 2);
-  var topCord = getPinCord(getComputedStyle(mainPin).top, mainPinParams.HEIGHT / 2);
+  var leftCord = getPinCord(mainPin.offsetLeft, mainPinParams.WIDTH / 2);
+  var topCord = getPinCord(mainPin.offsetTop, mainPinParams.HEIGHT / 2);
   setAdressDisabledValue(leftCord, topCord);
 
   mainPin.addEventListener('mouseup', function () {
-    initMap();
-    initForm();
-    topCord = getPinCord(getComputedStyle(mainPin).top, mainPinParams.HEIGHT);
-    setAdressDisabledValue(leftCord, topCord);
+    initPageElements(leftCord, topCord);
   });
 };
 
