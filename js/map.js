@@ -323,7 +323,10 @@ var createMapPinFromArray = function (dataObject) {
   mapPinImage.src = dataObject.author.avatar;
   mapPinImage.alt = dataObject.offer.title;
   mapPin.addEventListener('click', function (evt) {
-    openPopup(evt.currentTarget, dataObject);
+    if (activePin !== evt.currentTarget) {
+      openPopup(evt.currentTarget, dataObject);
+      pinClassAd(evt.currentTarget);
+    }
   });
   return mapPin;
 };
@@ -349,19 +352,32 @@ var createPins = function (array) {
  * @param {Ad} dataObject - объект с исходными данными
  */
 var openPopup = function (element, dataObject) {
-  var card = createMapCard(dataObject);
-  if (activePin) {
-    activePin.classList.remove('map__pin--active');
-  }
-  if (!activeCard) {
-    map.insertBefore(card, mapFilters);
-  } else if ((activeCard) && (activePin !== element)) {
+  if (activeCard) {
     deleteDisplayedAD();
-    map.insertBefore(card, mapFilters);
   }
-  activeCard = map.querySelector('.map__card');
+  var card = createMapCard(dataObject);
+  map.insertBefore(card, mapFilters);
+  activeCard = card;
+};
+
+/**
+ * Добавляет класс активному пин
+ * @param {Node} element
+ */
+var pinClassAd = function (element) {
+  if (activePin) {
+    pinClassRemove();
+  }
   activePin = element;
   activePin.classList.add('map__pin--active');
+};
+
+/**
+ * Удаляет класс у неактивного пин
+ */
+var pinClassRemove = function () {
+  activePin.classList.remove('map__pin--active');
+  activePin = null;
 };
 
 /**
@@ -440,6 +456,7 @@ var createMapCard = function (dataObject) {
   mapCard.querySelector('.popup__avatar').textContent = dataObject.author.avatar;
   mapCard.querySelector('.popup__close').addEventListener('click', function () {
     deleteDisplayedAD();
+    pinClassRemove();
   });
   document.addEventListener('keydown', onPopupEscPress);
   return mapCard;
@@ -488,8 +505,6 @@ var deleteDisplayedAD = function () {
   map.removeChild(activeCard);
   document.removeEventListener('keydown', onPopupEscPress);
   activeCard = null;
-  activePin.classList.remove('map__pin--active');
-  activePin = null;
 };
 
 var onPopupEscPress = function (evt) {
