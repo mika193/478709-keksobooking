@@ -1216,3 +1216,7 @@ fieldset {
       -ms-transform: translateX(-50%);
           transform: translateX(-50%);
 }
+
+.invalide-field {
+  border: 2px solid red;
+}
