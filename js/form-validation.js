@@ -47,7 +47,7 @@ var verifyValidity = function (element) {
 /**
  * Изменяет поле цены в соответствии с полем типа жилья
  */
-var changePrice = function () {
+var onHousingTypeChange = function () {
   price.min = housingPriceMatch[housingType.value].MIN_VALUE;
   price.placeholder = housingPriceMatch[housingType.value].PLACEHOLDER;
   verifyValidity(price);
@@ -57,7 +57,7 @@ title.addEventListener('change', function () {
   verifyValidity(title);
 });
 
-housingType.addEventListener('change', changePrice);
+housingType.addEventListener('change', onHousingTypeChange);
 
 price.addEventListener('change', function () {
   verifyValidity(price);
@@ -127,7 +127,7 @@ window.noticeForm.addEventListener('invalid', function (evt) {
 var deactivateForm = function () {
   window.noticeForm.reset();
   window.disableForm();
-  changePrice();
+  onHousingTypeChange();
   var mainPinCordY = window.mainPin.offsetTop - window.mainPinParams.HEIGHT / 2;
   window.setAdressValue(window.mainPinCordX, mainPinCordY);
 };
