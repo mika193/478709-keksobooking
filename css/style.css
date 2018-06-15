@@ -1217,6 +1217,7 @@ fieldset {
           transform: translateX(-50%);
 }
 
-.invalide-field {
+input.invalid-field,
+select.invalid-field {
   border: 2px solid red;
 }

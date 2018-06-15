@@ -112,7 +112,7 @@
 
         <fieldset class="ad-form__element ad-form__element--wide">
           <label class="ad-form__label" for="address">Адрес</label>
-          <input id="address" name="address" type="text" readonly value='537.5, 342.5'>
+          <input id="address" name="address" type="text" readonly>
         </fieldset>
 
         <fieldset class="ad-form__element">
@@ -157,10 +157,10 @@
         <fieldset class="ad-form__element">
           <label class="ad-form__label" for="capacity">Количество мест</label>
           <select id="capacity" name="capacity">
-            <option value="3">для 3 гостей</option>
-            <option value="2">для 2 гостей</option>
+            <option value="3" disabled>для 3 гостей</option>
+            <option value="2" disabled>для 2 гостей</option>
             <option value="1" selected>для 1 гостя</option>
-            <option value="0">не для гостей</option>
+            <option value="0" disabled>не для гостей</option>
           </select>
         </fieldset>
 
@@ -258,5 +258,6 @@
     <button type="button" class="map__pin" style="left: 200px; top: 400px;"><img src="img/avatars/user07.png" width="40" height="40" draggable="false" alt="Метка объявления"></button>
   </template>
   <script src="js/map.js"></script>
+  <script src="js/form-validation.js"></script>
 </body>
 </html>
