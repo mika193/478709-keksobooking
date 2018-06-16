@@ -93,34 +93,16 @@ var roomNumberMatch = {
   '100': ['0']
 };
 
-var onRoomNumberChange = function (evt) {
+window.onRoomNumberChange = function () {
+
   guestsNumberOptions.forEach(function (element) {
-    for (var i = 0; i < roomNumberMatch[evt.target.value].length; i++) {
-      if (element.value === roomNumberMatch[evt.target.value][i]) {
-        element.disabled = false;
-        break;
-      } else {
-        element.disabled = true;
-      }
-    }
+    element.disabled = !roomNumberMatch[roomNumber.value].includes(element.value);
   });
 
-  for (var i = 0; i < guestsNumberOptions.length; i++) {
-    if ((guestsNumberOptions[i].selected) && (guestsNumberOptions[i].disabled)) {
-      guestsNumberOptions[i].removeAttribute('selected');
-
-      for (var j = 0; j < guestsNumberOptions.length; j++) {
-        if (!guestsNumberOptions[j].disabled) {
-          guestsNumberOptions[j].setAttribute('selected', 'selected');
-          break;
-        }
-      }
-      break;
-    }
-  }
+  guestsNumber.value = roomNumberMatch[roomNumber.value].includes(guestsNumber.value) ? guestsNumber.value : roomNumberMatch[roomNumber.value][0];
 };
 
-roomNumber.addEventListener('change', onRoomNumberChange);
+roomNumber.addEventListener('change', window.onRoomNumberChange);
 
 /**
  * Деактивирует страницу
@@ -148,9 +130,9 @@ var deactivateForm = function () {
   window.disableForm();
   onHousingTypeChange();
   window.setAdressValue(false);
-  invalidFields.forEach(function (item) {
-    unhighlightField(item);
-  });
+  for (var i = invalidFields.length; i > 0; i--) {
+    unhighlightField(invalidFields[0]);
+  }
 };
 
 /**

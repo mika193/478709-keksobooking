@@ -488,6 +488,7 @@ var initForm = function () {
   noticeFormFieldsets.forEach(function (item) {
     item.removeAttribute('disabled');
   });
+  window.onRoomNumberChange();
 };
 
 /**
