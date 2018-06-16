@@ -1,5 +1,4 @@
 'use strict';
-
 var title = window.noticeForm.querySelector('#title');
 var housingType = window.noticeForm.querySelector('#type');
 var price = window.noticeForm.querySelector('#price');
@@ -9,6 +8,7 @@ var roomNumber = window.noticeForm.querySelector('#room_number');
 var guestsNumber = window.noticeForm.querySelector('#capacity');
 var resetButton = window.noticeForm.querySelector('.ad-form__reset');
 var guestsNumberOptions = guestsNumber.querySelectorAll('option');
+var invalidFields = [];
 
 var housingPriceMatch = {
   'bungalo': {
@@ -30,17 +30,28 @@ var housingPriceMatch = {
 };
 
 /**
- * Проверяет валидность элемента
- * @param {Node} element - Проверяемый элемент
+ * Обводит рамкой невалидное поле
+ * @param {Node} element - невалидное поле
  */
-var verifyValidity = function (element) {
-  var valid;
-  if (!element.checkValidity()) {
-    element.classList.add('invalid-field');
-    valid = false;
-  } else if (!valid) {
-    element.classList.remove('invalid-field');
-    valid = true;
+var highlightField = function (element) {
+  element.classList.add('invalid-field');
+  invalidFields.push(element);
+};
+
+/**
+ * Снимает рамку с валидного поля
+ * @param {Node} element - валидное поле
+ */
+var unhighlightField = function (element) {
+  element.classList.remove('invalid-field');
+  invalidFields.splice(invalidFields.indexOf(element), 1);
+};
+
+var onElementChange = function (evt) {
+  if (!evt.target.checkValidity()) {
+    highlightField(evt.target);
+  } else if (invalidFields.indexOf(evt.target) !== -1) {
+    unhighlightField(evt.target);
   }
 };
 
@@ -50,21 +61,21 @@ var verifyValidity = function (element) {
 var onHousingTypeChange = function () {
   price.min = housingPriceMatch[housingType.value].MIN_VALUE;
   price.placeholder = housingPriceMatch[housingType.value].PLACEHOLDER;
-  verifyValidity(price);
 };
 
-title.addEventListener('change', function () {
-  verifyValidity(title);
-});
+title.addEventListener('change', onElementChange);
 
 housingType.addEventListener('change', onHousingTypeChange);
 
-price.addEventListener('change', function () {
-  verifyValidity(price);
-});
+price.addEventListener('change', onElementChange);
 
-var matchTime = function (element, newMean) {
-  element.value = newMean;
+/**
+ * Приводит в соответствие значение полей
+ * @param {Node} element - элемент, значение которого меняем
+ * @param {string} value - новое значение
+ */
+var matchTime = function (element, value) {
+  element.value = value;
 };
 
 arrivalTime.addEventListener('change', function (evt) {
@@ -75,31 +86,41 @@ departureTime.addEventListener('change', function (evt) {
   matchTime(arrivalTime, evt.target.value);
 });
 
-/**
- * Устанавливает соответствие количества комнат количеству гостей
- * @param {string} value - количество комнат
- */
-var setGuestNumberValidity = function (value) {
-  guestsNumberOptions.forEach(function (item) {
-    var roomNumberMatch = {
-      '1': item.value !== '1',
-      '2': (item.value !== '1') && (item.value !== '2'),
-      '3': item.value === '0',
-      '100': item.value !== '0'
-    };
-    if (roomNumberMatch[value]) {
-      item.setAttribute('disabled', 'disabled');
-      item.removeAttribute('selected');
-    } else {
-      item.setAttribute('selected', 'selected');
-      item.removeAttribute('disabled');
-    }
-  });
+var roomNumberMatch = {
+  '1': ['1'],
+  '2': ['1', '2'],
+  '3': ['1', '2', '3'],
+  '100': ['0']
 };
 
-roomNumber.addEventListener('change', function () {
-  setGuestNumberValidity(roomNumber.value);
-});
+var onRoomNumberChange = function (evt) {
+  guestsNumberOptions.forEach(function (element) {
+    for (var i = 0; i < roomNumberMatch[evt.target.value].length; i++) {
+      if (element.value === roomNumberMatch[evt.target.value][i]) {
+        element.disabled = false;
+        break;
+      } else {
+        element.disabled = true;
+      }
+    }
+  });
+
+  for (var i = 0; i < guestsNumberOptions.length; i++) {
+    if ((guestsNumberOptions[i].selected) && (guestsNumberOptions[i].disabled)) {
+      guestsNumberOptions[i].removeAttribute('selected');
+
+      for (var j = 0; j < guestsNumberOptions.length; j++) {
+        if (!guestsNumberOptions[j].disabled) {
+          guestsNumberOptions[j].setAttribute('selected', 'selected');
+          break;
+        }
+      }
+      break;
+    }
+  }
+};
+
+roomNumber.addEventListener('change', onRoomNumberChange);
 
 /**
  * Деактивирует страницу
@@ -113,13 +134,11 @@ var deactivatePage = function () {
 resetButton.addEventListener('click', function (evt) {
   evt.preventDefault();
   deactivatePage();
-}
-);
+});
 
 window.noticeForm.addEventListener('invalid', function (evt) {
-  evt.target.classList.add('invalid-field');
-}, true
-);
+  highlightField(evt.target);
+}, true);
 
 /**
  * Деактивирует форму
@@ -128,8 +147,10 @@ var deactivateForm = function () {
   window.noticeForm.reset();
   window.disableForm();
   onHousingTypeChange();
-  var mainPinCordY = window.mainPin.offsetTop - window.mainPinParams.HEIGHT / 2;
-  window.setAdressValue(window.mainPinCordX, mainPinCordY);
+  window.setAdressValue(false);
+  invalidFields.forEach(function (item) {
+    unhighlightField(item);
+  });
 };
 
 /**

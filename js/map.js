@@ -71,7 +71,7 @@ var pinParams = {
 var mainPinParams = {
   WIDTH: 65,
   HEIGHT: 65,
-  ACTIVE_HEIGHT: 87
+  ACTIVE_HEIGHT: 81
 };
 
 /**
@@ -153,8 +153,6 @@ var noticeFormFieldsets = window.noticeForm.querySelectorAll('fieldset');
 var mainPin = document.querySelector('.map__pin--main');
 var adressField = window.noticeForm.querySelector('#address');
 var mapFilters = window.map.querySelector('.map__filters-container');
-window.mainPinCordX = mainPin.offsetLeft - mainPinParams.WIDTH / 2;
-window.mainPinCordY = mainPin.offsetTop - mainPinParams.HEIGHT / 2;
 window.activatedPage = false;
 var activeCard;
 var activePin;
@@ -493,12 +491,22 @@ var initForm = function () {
 };
 
 /**
- * Передает координаты метки в поле Адрес
- * @param {number} x - координата x
- * @param {number} y - координата y
+ * Возвращает координаты главного пин в зависимости от состояния страницы
+ * @param {boolean} active - отражает состояние страницы
+ * @return {string}
  */
-window.setAdressValue = function (x, y) {
-  adressField.value = x + ', ' + y;
+var getMainPinCoords = function (active) {
+  var mainPinCordX = mainPin.offsetLeft + mainPinParams.WIDTH / 2;
+  var mainPinCordY = (active) ? mainPin.offsetTop + mainPinParams.ACTIVE_HEIGHT : mainPin.offsetTop + mainPinParams.HEIGHT / 2;
+  return mainPinCordX + ', ' + mainPinCordY;
+};
+
+/**
+ * Передает координаты метки в поле Адрес
+ * @param {boolean} value - означает состояние активности или неактивности карты
+ */
+window.setAdressValue = function (value) {
+  adressField.value = getMainPinCoords(value);
 };
 
 /**
@@ -528,8 +536,7 @@ var initPageElements = function () {
     initForm();
     window.activatedPage = true;
   }
-  window.mainPinCordY = mainPin.offsetTop - mainPinParams.ACTIVE_HEIGHT;
-  window.setAdressValue(window.mainPinCordX, window.mainPinCordY);
+  window.setAdressValue(true);
 };
 
 /**
@@ -537,7 +544,7 @@ var initPageElements = function () {
  */
 var initPage = function () {
   window.disableForm();
-  window.setAdressValue(window.mainPinCordX, window.mainPinCordY);
+  window.setAdressValue(false);
 
   mainPin.addEventListener('mouseup', function () {
     initPageElements();
