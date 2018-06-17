@@ -549,12 +549,9 @@ var onPopupEscPress = function (evt) {
  * @param {number} x - x-координата главной метки
  */
 var initPageElements = function () {
-  if (!window.activatedPage) {
-    initMap();
-    initForm();
-    window.activatedPage = true;
-  }
-  window.setAdressValue(true);
+  initMap();
+  initForm();
+  window.activatedPage = true;
 };
 
 var onMainPinMouseDown = function (evt) {
@@ -567,7 +564,11 @@ var onMainPinMouseDown = function (evt) {
 
   var onMainPinMouseMove = function (moveEvt) {
     moveEvt.preventDefault();
-    initPageElements();
+    if (!window.activatedPage) {
+      initPageElements();
+    }
+
+    window.setAdressValue(true);
 
     var shift = {
       x: startCoords.x - moveEvt.clientX,
@@ -592,7 +593,10 @@ var onMainPinMouseDown = function (evt) {
 
   var onMainPinMouseUp = function (upEvt) {
     upEvt.preventDefault();
-    window.setAdressValue(window.activatedPage);
+    if (!window.activatedPage) {
+      initPageElements();
+    }
+    window.setAdressValue(true);
     document.removeEventListener('mousemove', onMainPinMouseMove);
     document.removeEventListener('mouseup', onMainPinMouseUp);
   };
