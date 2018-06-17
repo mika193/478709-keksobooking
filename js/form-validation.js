@@ -108,8 +108,8 @@ roomNumber.addEventListener('change', window.onRoomNumberChange);
  * Деактивирует страницу
  */
 var deactivatePage = function () {
-  deactivateForm();
   deactivateMap();
+  deactivateForm();
   window.activatedPage = false;
 };
 
@@ -145,4 +145,6 @@ var deactivateMap = function () {
   window.mapPins = [];
   window.deleteDisplayedAD();
   window.map.classList.add('map--faded');
+  window.mainPin.style.left = window.pinInactiveCordX + 'px';
+  window.mainPin.style.top = window.pinInactiveCordY + 'px';
 };

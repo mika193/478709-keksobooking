@@ -143,6 +143,11 @@ var offerTypesTranslation = {
   'bungalo': 'Бунгало',
 };
 
+var mainPinsParams = {
+  TOP: 130,
+  BOTTOM: 630
+};
+
 window.mapPinsContainer = document.querySelector('.map__pins');
 var mapTemplate = document.querySelector('template');
 var mapPinTemplate = mapTemplate.content.querySelector('.map__pin');
@@ -150,13 +155,25 @@ window.map = document.querySelector('.map');
 var mapCardTemplate = mapTemplate.content.querySelector('.map__card');
 window.noticeForm = document.querySelector('.ad-form');
 var noticeFormFieldsets = window.noticeForm.querySelectorAll('fieldset');
-var mainPin = document.querySelector('.map__pin--main');
+window.mainPin = document.querySelector('.map__pin--main');
 var adressField = window.noticeForm.querySelector('#address');
 var mapFilters = window.map.querySelector('.map__filters-container');
 window.activatedPage = false;
+window.pinInactiveCordY = window.mainPin.offsetTop;
+window.pinInactiveCordX = window.mainPin.offsetLeft;
 var activeCard;
 var activePin;
 window.mapPins = [];
+
+var topCord = {
+  min: mainPinsParams.TOP - mainPinParams.ACTIVE_HEIGHT,
+  max: mainPinsParams.BOTTOM - mainPinParams.ACTIVE_HEIGHT
+};
+
+var leftCord = {
+  min: 0 - Math.floor(mainPinParams.WIDTH / 2),
+  max: window.mapPinsContainer.offsetWidth - Math.floor(mainPinParams.WIDTH / 2)
+};
 
 /**
  * Генерирует случайное число в заданном диапазоне
@@ -497,8 +514,8 @@ var initForm = function () {
  * @return {string}
  */
 var getMainPinCoords = function (active) {
-  var mainPinCordX = mainPin.offsetLeft + mainPinParams.WIDTH / 2;
-  var mainPinCordY = (active) ? mainPin.offsetTop + mainPinParams.ACTIVE_HEIGHT : mainPin.offsetTop + mainPinParams.HEIGHT / 2;
+  var mainPinCordX = window.mainPin.offsetLeft + Math.floor(mainPinParams.WIDTH / 2);
+  var mainPinCordY = (active) ? window.mainPin.offsetTop + mainPinParams.ACTIVE_HEIGHT : window.mainPin.offsetTop + Math.floor(mainPinParams.HEIGHT / 2);
   return mainPinCordX + ', ' + mainPinCordY;
 };
 
@@ -532,12 +549,60 @@ var onPopupEscPress = function (evt) {
  * @param {number} x - x-координата главной метки
  */
 var initPageElements = function () {
-  if (!window.activatedPage) {
-    initMap();
-    initForm();
-    window.activatedPage = true;
-  }
-  window.setAdressValue(true);
+  initMap();
+  initForm();
+  window.activatedPage = true;
+};
+
+var onMainPinMouseDown = function (evt) {
+  evt.preventDefault();
+
+  var startCoords = {
+    x: evt.clientX,
+    y: evt.clientY
+  };
+
+  var onMainPinMouseMove = function (moveEvt) {
+    moveEvt.preventDefault();
+    if (!window.activatedPage) {
+      initPageElements();
+    }
+
+    window.setAdressValue(true);
+
+    var shift = {
+      x: startCoords.x - moveEvt.clientX,
+      y: startCoords.y - moveEvt.clientY
+    };
+
+    startCoords = {
+      x: moveEvt.clientX,
+      y: moveEvt.clientY
+    };
+
+    var newTopCord = ((window.mainPin.offsetTop - shift.y) < topCord.min) ? topCord.min : window.mainPin.offsetTop - shift.y;
+    newTopCord = ((newTopCord - shift.y) > topCord.max) ? topCord.max : newTopCord;
+
+
+    var newLeftCord = ((window.mainPin.offsetLeft - shift.x) < leftCord.min) ? leftCord.min : window.mainPin.offsetLeft - shift.x;
+    newLeftCord = (newLeftCord > leftCord.max) ? leftCord.max : newLeftCord;
+
+    window.mainPin.style.top = newTopCord + 'px';
+    window.mainPin.style.left = newLeftCord + 'px';
+  };
+
+  var onMainPinMouseUp = function (upEvt) {
+    upEvt.preventDefault();
+    if (!window.activatedPage) {
+      initPageElements();
+    }
+    window.setAdressValue(true);
+    document.removeEventListener('mousemove', onMainPinMouseMove);
+    document.removeEventListener('mouseup', onMainPinMouseUp);
+  };
+
+  document.addEventListener('mousemove', onMainPinMouseMove);
+  document.addEventListener('mouseup', onMainPinMouseUp);
 };
 
 /**
@@ -546,10 +611,7 @@ var initPageElements = function () {
 var initPage = function () {
   window.disableForm();
   window.setAdressValue(false);
-
-  mainPin.addEventListener('mouseup', function () {
-    initPageElements();
-  });
+  window.mainPin.addEventListener('mousedown', onMainPinMouseDown);
 };
 
 var similarAds = getAds(NUMBER_OF_ADS);
