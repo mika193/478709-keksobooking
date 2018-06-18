@@ -3,6 +3,7 @@
   var noticeForm = document.querySelector('.ad-form');
   var noticeFormFieldsets = noticeForm.querySelectorAll('fieldset');
   var title = noticeForm.querySelector('#title');
+  var adressField = noticeForm.querySelector('#address');
   var housingType = noticeForm.querySelector('#type');
   var price = noticeForm.querySelector('#price');
   var arrivalTime = noticeForm.querySelector('#timein');
@@ -10,6 +11,7 @@
   var roomNumber = noticeForm.querySelector('#room_number');
   var guestsNumber = noticeForm.querySelector('#capacity');
   var guestsNumberOptions = guestsNumber.querySelectorAll('option');
+  var resetButton = noticeForm.querySelector('.ad-form__reset');
   var invalidFields = [];
 
   var housingPriceMatch = {
@@ -73,6 +75,16 @@
     element.value = value;
   };
 
+  /**
+   * Делает поля формы недоступными
+   */
+  var disableForm = function () {
+    noticeForm.classList.add('ad-form--disabled');
+    noticeFormFieldsets.forEach(function (item) {
+      item.setAttribute('disabled', 'disabled');
+    });
+  };
+
   var onRoomNumberChange = function () {
 
     guestsNumberOptions.forEach(function (element) {
@@ -110,13 +122,12 @@
     highlightField(evt.target);
   }, true);
 
+  resetButton.addEventListener('click', function (evt) {
+    evt.preventDefault();
+    window.page.deactivate();
+  });
+
   window.form = {
-    disable: function () {
-      noticeForm.classList.add('ad-form--disabled');
-      noticeFormFieldsets.forEach(function (item) {
-        item.setAttribute('disabled', 'disabled');
-      });
-    },
     init: function () {
       noticeForm.classList.remove('ad-form--disabled');
       noticeFormFieldsets.forEach(function (item) {
@@ -126,11 +137,16 @@
     },
     deactivate: function () {
       noticeForm.reset();
-      this.disable();
+      disableForm();
       onHousingTypeChange();
       for (var i = invalidFields.length; i > 0; i--) {
         unhighlightField(invalidFields[0]);
       }
-    }
+    },
+    setAdressValue: function (value) {
+      adressField.value = value;
+    },
   };
+
+  disableForm();
 })();

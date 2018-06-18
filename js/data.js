@@ -2,9 +2,6 @@
 
 (function () {
   /** @constant {number} */
-  var NUMBER_OF_ADS = 8;
-
-  /** @constant {number} */
   var MAXIMUM_ROOM_COUNT = 5;
 
   /** @constant {number} */
@@ -206,7 +203,7 @@
    * @param {number} arrayLength - количество записываемых в массив объявлений
    * @return {Array.<Ad>}
    */
-  var getAds = function (arrayLength) {
+  window.dataCreate = function (arrayLength) {
     var ads = [];
 
     for (var i = 0; i < arrayLength; i++) {
@@ -215,5 +212,4 @@
 
     return ads;
   };
-  window.similarAds = getAds(NUMBER_OF_ADS);
 })();

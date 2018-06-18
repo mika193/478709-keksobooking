@@ -3,135 +3,38 @@
   /** @constant {number} */
   var ESC_CODE = 27;
 
+  /** @constant {number} */
+  var NUMBER_OF_ADS = 8;
+
   var map = document.querySelector('.map');
-  var mapPinsContainer = document.querySelector('.map__pins');
-  var mapPins = [];
-  var mapTemplate = document.querySelector('template');
-  var mapPinTemplate = mapTemplate.content.querySelector('.map__pin');
-  var mapCardTemplate = mapTemplate.content.querySelector('.map__card');
   var mapFilters = map.querySelector('.map__filters-container');
+  var mapPinsContainer = document.querySelector('.map__pins');
+  var mainPin = document.querySelector('.map__pin--main');
+  var pinInactiveCordY = mainPin.offsetTop;
+  var pinInactiveCordX = mainPin.offsetLeft;
+  var fragment = document.createDocumentFragment();
   var activePin;
   var activeCard;
+  var mapPins = [];
 
-  var pinParams = {
-    WIDTH: 50,
-    HEIGHT: 70
+  var mainPinParams = {
+    WIDTH: 65,
+    HEIGHT: 65,
+    ACTIVE_HEIGHT: 81,
+    yCordMin: 130,
+    yCordMax: 630,
+    xCordMin: 0,
+    xCordMax: 1200
   };
 
-  var offerTypesTranslation = {
-    'flat': 'Квартира',
-    'palace': 'Дворец',
-    'house': 'Дом',
-    'bungalo': 'Бунгало',
+  var topCord = {
+    min: mainPinParams.yCordMin - mainPinParams.ACTIVE_HEIGHT,
+    max: mainPinParams.yCordMax - mainPinParams.ACTIVE_HEIGHT
   };
 
-  var photoParams = {
-    WIDTH: 45,
-    HEIGHT: 40,
-    ALT: 'Фотография жилья',
-    CLASS: 'popup__photo'
-  };
-
-    /**
-   * Генерирует элемент списка характеристик
-   * @param {string} text - текст, прибавляемый к классу элемента
-   * @return {Node}
-   */
-  var createFeature = function (text) {
-    var mapNewFeature = document.createElement('li');
-    mapNewFeature.classList.add('popup__feature');
-    mapNewFeature.classList.add('popup__feature--' + text);
-    return mapNewFeature;
-  };
-
-  /**
-   * Создает DOM-элемент (изображение)
-   * @param {string} link - адрес картинки
-   * @return {Node}
-   */
-  var createPhotoImage = function (link) {
-    var element = document.createElement('img');
-    element.src = link;
-    element.style.width = photoParams.WIDTH + 'px';
-    element.style.height = photoParams.HEIGHT + 'px';
-    element.alt = photoParams.ALT;
-    element.classList.add(photoParams.CLASS);
-    return element;
-  };
-
-  /**
-   * Возвращает слово с правильным окончанием
-   * @param {number} number - число в соответствии с которым изменяется слово
-   * @param {Array.<string>} array - массив вариантов написания слова в порядке: единственное число, множественное для number от 2 до 4 включительно, множественное для number от 5 включительно
-   * @return {string}
-   */
-  var getDeclension = function (number, array) {
-    if ((number % 100 < 20) && (number % 100 >= 5)) {
-      return array[2];
-    }
-    if (number % 10 === 1) {
-      return array[0];
-    } else if ((number % 10 > 1) && (number % 10 < 5)) {
-      return array[1];
-    } else {
-      return array[2];
-    }
-  };
-
-    /**
-   * Создает DOM-элемент объявления
-   * @param {Ad} dataObject - объект, содержащий данные для создания DOM-элементов
-   * @return {Node}
-   */
-  var createMapCard = function (dataObject) {
-    var mapCard = mapCardTemplate.cloneNode(true);
-    var featuresBlock = mapCard.querySelector('.popup__features');
-    var photoBlock = mapCard.querySelector('.popup__photos');
-    mapCard.querySelector('.popup__avatar').src = dataObject.author.avatar;
-    mapCard.querySelector('.popup__title').textContent = dataObject.offer.title;
-    mapCard.querySelector('.popup__text--address').textContent = dataObject.offer.adress;
-    mapCard.querySelector('.popup__text--price').textContent = dataObject.offer.price + '₽/ночь';
-    mapCard.querySelector('.popup__type').textContent = offerTypesTranslation[dataObject.offer.type];
-    mapCard.querySelector('.popup__text--capacity').textContent = dataObject.offer.rooms + ' ' + getDeclension(dataObject.offer.rooms, ['комната', 'комнаты', 'комнат']) + ' для ' + dataObject.offer.guests + ' ' + getDeclension(dataObject.offer.guests, ['гостя', 'гостей', 'гостей']);
-    mapCard.querySelector('.popup__text--time').textContent = 'Заезд после ' + dataObject.offer.checkin + ', выезд до ' + dataObject.offer.checkout;
-    mapCard.querySelector('.popup__description').textContent = dataObject.offer.description;
-
-    dataObject.offer.features.forEach(function (item) {
-      featuresBlock.appendChild(createFeature(item));
-    });
-
-    dataObject.offer.photos.forEach(function (item) {
-      photoBlock.appendChild(createPhotoImage(item));
-    });
-
-    mapCard.querySelector('.popup__avatar').textContent = dataObject.author.avatar;
-    mapCard.querySelector('.popup__close').addEventListener('click', function () {
-      deleteDisplayedAD();
-    });
-    document.addEventListener('keydown', onPopupEscPress);
-    return mapCard;
-  };
-
-  /**
-   * Генерирует метку на карте из объекта с данными
-   * @param {Ad} dataObject - объект с исходными данными
-   * @return {Node}
-   */
-  var createMapPinFromArray = function (dataObject) {
-    var mapPin = mapPinTemplate.cloneNode(true);
-    var mapPinImage = mapPin.querySelector('img');
-    mapPin.style.left = (dataObject.location.x - pinParams.WIDTH / 2) + 'px';
-    mapPin.style.top = (dataObject.location.y - pinParams.HEIGHT) + 'px';
-    mapPinImage.src = dataObject.author.avatar;
-    mapPinImage.alt = dataObject.offer.title;
-    mapPin.addEventListener('click', function (evt) {
-      if (activePin !== evt.currentTarget) {
-        openPopup(evt.currentTarget, dataObject);
-        pinClassAd(evt.currentTarget);
-      }
-    });
-    mapPins.push(mapPin);
-    return mapPin;
+  var leftCord = {
+    min: mainPinParams.xCordMin - Math.floor(mainPinParams.WIDTH / 2),
+    max: mainPinParams.xCordMax - Math.floor(mainPinParams.WIDTH / 2)
   };
 
   /**
@@ -139,9 +42,7 @@
    * @param {Node} element
    */
   var pinClassAd = function (element) {
-    if (activePin) {
-      pinClassRemove();
-    }
+    pinClassRemove();
     activePin = element;
     activePin.classList.add('map__pin--active');
   };
@@ -150,62 +51,118 @@
    * Удаляет класс у неактивного пин
    */
   var pinClassRemove = function () {
-    activePin.classList.remove('map__pin--active');
-    activePin = null;
+    if (activePin) {
+      activePin.classList.remove('map__pin--active');
+      activePin = null;
+    }
   };
 
   /**
    * Открывает попап с объявлением, соответствующим нажатой метке
-   * @param {Node} element - элемент, на котором произошел клик
    * @param {Ad} dataObject - объект с исходными данными
    */
-  var openPopup = function (element, dataObject) {
-    if (activeCard) {
-      deleteDisplayedAD();
-    }
-    var card = createMapCard(dataObject);
-    map.insertBefore(card, mapFilters);
+  var openPopup = function (dataObject) {
+    closePopup();
+    var card = window.createMapCard(dataObject);
+    card.querySelector('.popup__close').addEventListener('click', function () {
+      closePopup();
+    });
+    document.addEventListener('keydown', onPopupEscPress);
     activeCard = card;
+    map.insertBefore(card, mapFilters);
   };
 
   /**
-   * Удаляет отображенное объявление
+   * Закрывает попап с объявлением
    */
-  var deleteDisplayedAD = function () {
+  var closePopup = function () {
     if (activeCard) {
       map.removeChild(activeCard);
-    }
-    document.removeEventListener('keydown', onPopupEscPress);
-    activeCard = null;
-    if (activePin) {
+      document.removeEventListener('keydown', onPopupEscPress);
+      activeCard = null;
       pinClassRemove();
     }
   };
 
   var onPopupEscPress = function (evt) {
     if (evt.keyCode === ESC_CODE) {
-      deleteDisplayedAD();
+      closePopup();
     }
   };
 
   /**
-   * Создает DOM-элементы, соответствующие меткам на карте
-   * @param {Array.<Ad>} array - массив объектов с исходными данными
-   * @return {Node}
+   * Возвращает координаты главного пин в зависимости от состояния страницы
+   * @param {boolean} active - отражает состояние страницы
+   * @return {string}
    */
-  var createPins = function (array) {
-    var fragment = document.createDocumentFragment();
+  var getMainPinCoords = function (active) {
+    var mainPinCordX = mainPin.offsetLeft + Math.floor(mainPinParams.WIDTH / 2);
+    var mainPinCordY = (active) ? mainPin.offsetTop + mainPinParams.ACTIVE_HEIGHT : mainPin.offsetTop + Math.floor(mainPinParams.HEIGHT / 2);
+    return mainPinCordX + ', ' + mainPinCordY;
+  };
 
-    array.forEach(function (item) {
-      fragment.appendChild(createMapPinFromArray(item));
-    });
+  var onMainPinMouseDown = function (evt) {
+    evt.preventDefault();
 
-    return fragment;
+    var startCoords = {
+      x: evt.clientX,
+      y: evt.clientY
+    };
+
+    var onMainPinMouseMove = function (moveEvt) {
+      moveEvt.preventDefault();
+      window.page.init();
+
+      window.form.setAdressValue(getMainPinCoords(true));
+
+      var shift = {
+        x: startCoords.x - moveEvt.clientX,
+        y: startCoords.y - moveEvt.clientY
+      };
+
+      startCoords = {
+        x: moveEvt.clientX,
+        y: moveEvt.clientY
+      };
+
+      var newTopCord = mainPin.offsetTop - shift.y;
+      var newLeftCord = mainPin.offsetLeft - shift.x;
+
+      newTopCord = (newTopCord < topCord.min) ? topCord.min : newTopCord;
+      newTopCord = ((newTopCord - shift.y) > topCord.max) ? topCord.max : newTopCord;
+
+      newLeftCord = (newLeftCord < leftCord.min) ? leftCord.min : newLeftCord;
+      newLeftCord = (newLeftCord > leftCord.max) ? leftCord.max : newLeftCord;
+
+      mainPin.style.top = newTopCord + 'px';
+      mainPin.style.left = newLeftCord + 'px';
+    };
+
+    var onMainPinMouseUp = function (upEvt) {
+      upEvt.preventDefault();
+      window.page.init();
+      window.form.setAdressValue(getMainPinCoords(true));
+      document.removeEventListener('mousemove', onMainPinMouseMove);
+      document.removeEventListener('mouseup', onMainPinMouseUp);
+    };
+    document.addEventListener('mousemove', onMainPinMouseMove);
+    document.addEventListener('mouseup', onMainPinMouseUp);
   };
 
   window.map = {
     init: function () {
-      mapPinsContainer.appendChild(createPins(window.similarAds));
+      window.dataCreate(NUMBER_OF_ADS).forEach(function (item) {
+        var pin = window.createPin(item);
+        pin.addEventListener('click', function (evt) {
+          if (activePin !== evt.currentTarget) {
+            openPopup(item);
+            pinClassAd(evt.currentTarget);
+          }
+        });
+        fragment.appendChild(pin);
+        mapPins.push(pin);
+      });
+      mapPinsContainer.appendChild(fragment);
       map.classList.remove('map--faded');
     },
 
@@ -214,8 +171,14 @@
         mapPinsContainer.removeChild(item);
       });
       mapPins = [];
-      deleteDisplayedAD();
+      closePopup();
+      mainPin.style.left = pinInactiveCordX + 'px';
+      mainPin.style.top = pinInactiveCordY + 'px';
+      window.form.setAdressValue(getMainPinCoords(false));
       map.classList.add('map--faded');
     }
   };
+
+  window.form.setAdressValue(getMainPinCoords(false));
+  mainPin.addEventListener('mousedown', onMainPinMouseDown);
 })();
