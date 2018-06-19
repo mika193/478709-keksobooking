@@ -1,7 +1,13 @@
 'use strict';
 
 (function () {
+  /** @constant {number} */
+  var ESC_CODE = 27;
+
   var mapCardTemplate = document.querySelector('template').content.querySelector('.map__card');
+  var map = document.querySelector('.map');
+  var mapFilters = map.querySelector('.map__filters-container');
+  var activeCard;
 
   var offerTypesTranslation = {
     'flat': 'Квартира',
@@ -44,22 +50,9 @@
     return element;
   };
 
-  /**
-   * Возвращает слово с правильным окончанием
-   * @param {number} number - число в соответствии с которым изменяется слово
-   * @param {Array.<string>} array - массив вариантов написания слова в порядке: единственное число, множественное для number от 2 до 4 включительно, множественное для number от 5 включительно
-   * @return {string}
-   */
-  var getDeclension = function (number, array) {
-    if ((number % 100 < 20) && (number % 100 >= 5)) {
-      return array[2];
-    }
-    if (number % 10 === 1) {
-      return array[0];
-    } else if ((number % 10 > 1) && (number % 10 < 5)) {
-      return array[1];
-    } else {
-      return array[2];
+  var onPopupEscPress = function (evt) {
+    if (evt.keyCode === ESC_CODE) {
+      window.popup.close();
     }
   };
 
@@ -68,7 +61,7 @@
    * @param {Ad} dataObject - объект, содержащий данные для создания DOM-элементов
    * @return {Node}
    */
-  window.createMapCard = function (dataObject) {
+  var createMapCard = function (dataObject) {
     var mapCard = mapCardTemplate.cloneNode(true);
     var featuresBlock = mapCard.querySelector('.popup__features');
     var photoBlock = mapCard.querySelector('.popup__photos');
@@ -77,7 +70,7 @@
     mapCard.querySelector('.popup__text--address').textContent = dataObject.offer.adress;
     mapCard.querySelector('.popup__text--price').textContent = dataObject.offer.price + '₽/ночь';
     mapCard.querySelector('.popup__type').textContent = offerTypesTranslation[dataObject.offer.type];
-    mapCard.querySelector('.popup__text--capacity').textContent = dataObject.offer.rooms + ' ' + getDeclension(dataObject.offer.rooms, ['комната', 'комнаты', 'комнат']) + ' для ' + dataObject.offer.guests + ' ' + getDeclension(dataObject.offer.guests, ['гостя', 'гостей', 'гостей']);
+    mapCard.querySelector('.popup__text--capacity').textContent = dataObject.offer.rooms + ' ' + window.utils.getDeclension(dataObject.offer.rooms, ['комната', 'комнаты', 'комнат']) + ' для ' + dataObject.offer.guests + ' ' + window.utils.getDeclension(dataObject.offer.guests, ['гостя', 'гостей', 'гостей']);
     mapCard.querySelector('.popup__text--time').textContent = 'Заезд после ' + dataObject.offer.checkin + ', выезд до ' + dataObject.offer.checkout;
     mapCard.querySelector('.popup__description').textContent = dataObject.offer.description;
 
@@ -91,5 +84,34 @@
 
     mapCard.querySelector('.popup__avatar').textContent = dataObject.author.avatar;
     return mapCard;
+  };
+
+  window.popup = {
+    /**
+   * Открывает попап с объявлением, соответствующим нажатой метке
+   * @param {Ad} dataObject - объект с исходными данными
+   */
+    open: function (dataObject) {
+      window.popup.close();
+      var card = createMapCard(dataObject);
+      card.querySelector('.popup__close').addEventListener('click', function () {
+        window.popup.close();
+      });
+      document.addEventListener('keydown', onPopupEscPress);
+      activeCard = card;
+      map.insertBefore(card, mapFilters);
+    },
+
+    /**
+     * Закрывает попап с объявлением
+     */
+    close: function () {
+      if (activeCard) {
+        map.removeChild(activeCard);
+        document.removeEventListener('keydown', onPopupEscPress);
+        activeCard = null;
+        window.pin.classRemove();
+      }
+    }
   };
 })();

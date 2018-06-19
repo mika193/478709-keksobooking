@@ -1,21 +1,16 @@
 'use strict';
 (function () {
   /** @constant {number} */
-  var ESC_CODE = 27;
-
-  /** @constant {number} */
   var NUMBER_OF_ADS = 8;
 
   var map = document.querySelector('.map');
-  var mapFilters = map.querySelector('.map__filters-container');
   var mapPinsContainer = document.querySelector('.map__pins');
   var mainPin = document.querySelector('.map__pin--main');
   var pinInactiveCordY = mainPin.offsetTop;
   var pinInactiveCordX = mainPin.offsetLeft;
   var fragment = document.createDocumentFragment();
-  var activePin;
-  var activeCard;
   var mapPins = [];
+  var dataArray = [];
 
   var mainPinParams = {
     WIDTH: 65,
@@ -35,59 +30,6 @@
   var leftCord = {
     min: mainPinParams.xCordMin - Math.floor(mainPinParams.WIDTH / 2),
     max: mainPinParams.xCordMax - Math.floor(mainPinParams.WIDTH / 2)
-  };
-
-  /**
-   * Добавляет класс активному пин
-   * @param {Node} element
-   */
-  var pinClassAd = function (element) {
-    pinClassRemove();
-    activePin = element;
-    activePin.classList.add('map__pin--active');
-  };
-
-  /**
-   * Удаляет класс у неактивного пин
-   */
-  var pinClassRemove = function () {
-    if (activePin) {
-      activePin.classList.remove('map__pin--active');
-      activePin = null;
-    }
-  };
-
-  /**
-   * Открывает попап с объявлением, соответствующим нажатой метке
-   * @param {Ad} dataObject - объект с исходными данными
-   */
-  var openPopup = function (dataObject) {
-    closePopup();
-    var card = window.createMapCard(dataObject);
-    card.querySelector('.popup__close').addEventListener('click', function () {
-      closePopup();
-    });
-    document.addEventListener('keydown', onPopupEscPress);
-    activeCard = card;
-    map.insertBefore(card, mapFilters);
-  };
-
-  /**
-   * Закрывает попап с объявлением
-   */
-  var closePopup = function () {
-    if (activeCard) {
-      map.removeChild(activeCard);
-      document.removeEventListener('keydown', onPopupEscPress);
-      activeCard = null;
-      pinClassRemove();
-    }
-  };
-
-  var onPopupEscPress = function (evt) {
-    if (evt.keyCode === ESC_CODE) {
-      closePopup();
-    }
   };
 
   /**
@@ -149,16 +91,17 @@
     document.addEventListener('mouseup', onMainPinMouseUp);
   };
 
+  window.form.setAdressValue(getMainPinCoords(false));
+  mainPin.addEventListener('mousedown', onMainPinMouseDown);
+
   window.map = {
     init: function () {
-      window.dataCreate(NUMBER_OF_ADS).forEach(function (item) {
-        var pin = window.createPin(item);
-        pin.addEventListener('click', function (evt) {
-          if (activePin !== evt.currentTarget) {
-            openPopup(item);
-            pinClassAd(evt.currentTarget);
-          }
-        });
+      for (var i = 0; i < NUMBER_OF_ADS; i++) {
+        dataArray.push(window.getData(i));
+      }
+
+      dataArray.forEach(function (item) {
+        var pin = window.pin.create(item);
         fragment.appendChild(pin);
         mapPins.push(pin);
       });
@@ -171,14 +114,11 @@
         mapPinsContainer.removeChild(item);
       });
       mapPins = [];
-      closePopup();
+      window.popup.close();
       mainPin.style.left = pinInactiveCordX + 'px';
       mainPin.style.top = pinInactiveCordY + 'px';
       window.form.setAdressValue(getMainPinCoords(false));
       map.classList.add('map--faded');
     }
   };
-
-  window.form.setAdressValue(getMainPinCoords(false));
-  mainPin.addEventListener('mousedown', onMainPinMouseDown);
 })();

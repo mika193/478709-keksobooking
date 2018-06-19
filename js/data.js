@@ -62,16 +62,6 @@
   };
 
   /**
-   * Генерирует случайное число в заданном диапазоне
-   * @param {number} min - минимальное значение генерируемого числа
-   * @param {number} max - максимальное значение генерируемого числа
-   * @return {number}
-   */
-  var getRandomNumber = function (min, max) {
-    return Math.random() * (max - min) + min;
-  };
-
-  /**
    * Генерирует путь к аватарке
    * @param {number} index - порядковый номер аватара
    * @return {string}
@@ -104,30 +94,6 @@
     }
 
     return propertyType;
-  };
-
-  /**
-   * Создает массив случайно расположенных элементов
-   * @param {Array.<string>} array - массив с исходным списком строк
-   * @param {number} length - необходимая длина массива
-   * @param {boolean} unique - определяет будут ли повторяться элементы в новом массиве
-   * @return {Array.<string>}
-   */
-  var createRandomArray = function (array, length, unique) {
-
-    var newArray = [];
-    var i = 0;
-    while (i < length) {
-      var elementIndex = Math.floor(getRandomNumber(0, array.length));
-      if ((newArray.indexOf(array[elementIndex]) !== -1) && (unique)) {
-        continue;
-      }
-
-      i++;
-      newArray.push(array[elementIndex]);
-    }
-
-    return newArray;
   };
 
   /**
@@ -168,9 +134,9 @@
    * @param {number} index - порядковый номер элемента из массива данных
    * @return {Ad}
    */
-  var getAd = function (index) {
-    var locationX = Math.round(getRandomNumber(xCordParams.MINIMUM, xCordParams.MAXIMUM));
-    var locationY = Math.round(getRandomNumber(yCordParams.MINIMUM, yCordParams.MAXIMUM));
+  window.getData = function (index) {
+    var locationX = Math.round(window.utils.getRandomNumber(xCordParams.MINIMUM, xCordParams.MAXIMUM));
+    var locationY = Math.round(window.utils.getRandomNumber(yCordParams.MINIMUM, yCordParams.MAXIMUM));
 
     return {
       author: {
@@ -180,15 +146,15 @@
       offer: {
         title: offerParams.PROPERTY_TITLES[index],
         address: locationX + ', ' + locationY,
-        price: Math.round(getRandomNumber(priceParams.MINIMUM, priceParams.MAXIMUM)),
+        price: Math.round(window.utils.getRandomNumber(priceParams.MINIMUM, priceParams.MAXIMUM)),
         type: createPropertyType(offerParams.PROPERTY_TITLES[index]),
-        rooms: Math.ceil(getRandomNumber(1, MAXIMUM_ROOM_COUNT)),
-        guests: Math.ceil(getRandomNumber(1, MAXIMUM_GUEST_COUNT)),
-        checkin: offerParams.TIMES[Math.floor(getRandomNumber(0, offerParams.TIMES.length))],
-        checkout: offerParams.TIMES[Math.floor(getRandomNumber(0, offerParams.TIMES.length))],
-        features: createRandomArray(offerParams.FEATURES, Math.ceil(getRandomNumber(1, offerParams.FEATURES.length)), true),
+        rooms: Math.ceil(window.utils.getRandomNumber(1, MAXIMUM_ROOM_COUNT)),
+        guests: Math.ceil(window.utils.getRandomNumber(1, MAXIMUM_GUEST_COUNT)),
+        checkin: offerParams.TIMES[Math.floor(window.utils.getRandomNumber(0, offerParams.TIMES.length))],
+        checkout: offerParams.TIMES[Math.floor(window.utils.getRandomNumber(0, offerParams.TIMES.length))],
+        features: window.utils.createRandomArray(offerParams.FEATURES, Math.ceil(window.utils.getRandomNumber(1, offerParams.FEATURES.length)), true),
         description: '',
-        photos: createRandomArray(offerParams.PHOTOS, offerParams.PHOTOS.length, true)
+        photos: window.utils.createRandomArray(offerParams.PHOTOS, offerParams.PHOTOS.length, true)
       },
 
       location: {
@@ -196,20 +162,5 @@
         y: locationY
       }
     };
-  };
-
-  /**
-   * Создает массив объектов похожих объявлений
-   * @param {number} arrayLength - количество записываемых в массив объявлений
-   * @return {Array.<Ad>}
-   */
-  window.dataCreate = function (arrayLength) {
-    var ads = [];
-
-    for (var i = 0; i < arrayLength; i++) {
-      ads.push(getAd(i));
-    }
-
-    return ads;
   };
 })();

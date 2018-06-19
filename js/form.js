@@ -127,6 +127,8 @@
     window.page.deactivate();
   });
 
+  disableForm();
+
   window.form = {
     init: function () {
       noticeForm.classList.remove('ad-form--disabled');
@@ -147,6 +149,4 @@
       adressField.value = value;
     },
   };
-
-  disableForm();
 })();
