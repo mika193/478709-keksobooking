@@ -16,20 +16,20 @@
     WIDTH: 65,
     HEIGHT: 65,
     ACTIVE_HEIGHT: 81,
-    yCordMin: 130,
-    yCordMax: 630,
-    xCordMin: 0,
-    xCordMax: 1200
+    Y_COORD_MIN: 130,
+    Y_COORD_MAX: 630,
+    X_COORD_MIN: 0,
+    X_COORD_MAX: 1200
   };
 
   var topCord = {
-    min: mainPinParams.yCordMin - mainPinParams.ACTIVE_HEIGHT,
-    max: mainPinParams.yCordMax - mainPinParams.ACTIVE_HEIGHT
+    min: mainPinParams.Y_COORD_MIN - mainPinParams.ACTIVE_HEIGHT,
+    max: mainPinParams.Y_COORD_MAX - mainPinParams.ACTIVE_HEIGHT
   };
 
   var leftCord = {
-    min: mainPinParams.xCordMin - Math.floor(mainPinParams.WIDTH / 2),
-    max: mainPinParams.xCordMax - Math.floor(mainPinParams.WIDTH / 2)
+    min: mainPinParams.X_COORD_MIN - Math.floor(mainPinParams.WIDTH / 2),
+    max: mainPinParams.X_COORD_MAX - Math.floor(mainPinParams.WIDTH / 2)
   };
 
   /**
@@ -41,6 +41,28 @@
     var mainPinCordX = mainPin.offsetLeft + Math.floor(mainPinParams.WIDTH / 2);
     var mainPinCordY = (active) ? mainPin.offsetTop + mainPinParams.ACTIVE_HEIGHT : mainPin.offsetTop + Math.floor(mainPinParams.HEIGHT / 2);
     return mainPinCordX + ', ' + mainPinCordY;
+  };
+
+  /**
+   * Добавляет пины на страницу
+   */
+  var addPins = function () {
+    dataArray.forEach(function (item) {
+      var pin = window.pin.create(item);
+      fragment.appendChild(pin);
+      mapPins.push(pin);
+    });
+    mapPinsContainer.appendChild(fragment);
+  };
+
+  /**
+   * Удаляет пины со страницы
+   */
+  var deletePins = function () {
+    mapPins.forEach(function (item) {
+      mapPinsContainer.removeChild(item);
+    });
+    mapPins = [];
   };
 
   var onMainPinMouseDown = function (evt) {
@@ -94,26 +116,24 @@
   window.form.setAdressValue(getMainPinCoords(false));
   mainPin.addEventListener('mousedown', onMainPinMouseDown);
 
+  /**
+   * Создает массив объявлений
+   */
+  var getDataArray = function () {
+    for (var i = 0; i < NUMBER_OF_ADS; i++) {
+      dataArray.push(window.getData(i));
+    }
+  };
+
   window.map = {
     init: function () {
-      for (var i = 0; i < NUMBER_OF_ADS; i++) {
-        dataArray.push(window.getData(i));
-      }
-
-      dataArray.forEach(function (item) {
-        var pin = window.pin.create(item);
-        fragment.appendChild(pin);
-        mapPins.push(pin);
-      });
-      mapPinsContainer.appendChild(fragment);
+      getDataArray();
+      addPins();
       map.classList.remove('map--faded');
     },
 
     deactivate: function () {
-      mapPins.forEach(function (item) {
-        mapPinsContainer.removeChild(item);
-      });
-      mapPins = [];
+      deletePins();
       window.popup.close();
       mainPin.style.left = pinInactiveCordX + 'px';
       mainPin.style.top = pinInactiveCordY + 'px';

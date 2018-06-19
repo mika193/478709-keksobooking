@@ -9,14 +9,24 @@
     HEIGHT: 70
   };
 
-    /**
+  /**
    * Добавляет класс активному пин
    * @param {Node} element
    */
-  var pinClassAd = function (element) {
-    window.pin.classRemove();
+  var activatePin = function (element) {
+    deactivatePin();
     activePin = element;
     activePin.classList.add('map__pin--active');
+  };
+
+  /**
+    * Удаляет класс у неактивного пин
+    */
+  var deactivatePin = function () {
+    if (activePin) {
+      activePin.classList.remove('map__pin--active');
+      activePin = null;
+    }
   };
 
   window.pin = {
@@ -26,29 +36,21 @@
      * @return {Node}
      */
     create: function (dataObject) {
-      var mapPin = mapPinTemplate.cloneNode(true);
-      var mapPinImage = mapPin.querySelector('img');
-      mapPin.style.left = (dataObject.location.x - pinParams.WIDTH / 2) + 'px';
-      mapPin.style.top = (dataObject.location.y - pinParams.HEIGHT) + 'px';
-      mapPinImage.src = dataObject.author.avatar;
-      mapPinImage.alt = dataObject.offer.title;
-      mapPin.addEventListener('click', function (evt) {
+      var pin = mapPinTemplate.cloneNode(true);
+      var pinImage = pin.querySelector('img');
+      pin.style.left = (dataObject.location.x - pinParams.WIDTH / 2) + 'px';
+      pin.style.top = (dataObject.location.y - pinParams.HEIGHT) + 'px';
+      pinImage.src = dataObject.author.avatar;
+      pinImage.alt = dataObject.offer.title;
+      pin.addEventListener('click', function (evt) {
         if (activePin !== evt.currentTarget) {
           window.popup.open(dataObject);
-          pinClassAd(evt.currentTarget);
+          activatePin(evt.currentTarget);
         }
       });
-      return mapPin;
+      return pin;
     },
 
-    /**
-    * Удаляет класс у неактивного пин
-    */
-    classRemove: function () {
-      if (activePin) {
-        activePin.classList.remove('map__pin--active');
-        activePin = null;
-      }
-    }
+    deactivate: deactivatePin
   };
 })();

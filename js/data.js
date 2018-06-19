@@ -67,12 +67,7 @@
    * @return {string}
    */
   var generateAvatarPath = function (index) {
-    var avatarIndex = index;
-    if (index < 10) {
-      avatarIndex = '0' + index;
-    }
-
-    return avatarParams.URL + avatarIndex + avatarParams.EXTENSION;
+    return avatarParams.URL + ((index < 10) ? '0' + index : index) + avatarParams.EXTENSION;
   };
 
   /**

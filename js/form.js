@@ -55,13 +55,12 @@
    */
   var unhighlightField = function (element) {
     element.classList.remove('invalid-field');
-    invalidFields.splice(invalidFields.indexOf(element), 1);
   };
 
   /**
    * Изменяет поле цены в соответствии с полем типа жилья
    */
-  var onHousingTypeChange = function () {
+  var setPriceAttributes = function () {
     price.min = housingPriceMatch[housingType.value].MIN_VALUE;
     price.placeholder = housingPriceMatch[housingType.value].PLACEHOLDER;
   };
@@ -85,8 +84,10 @@
     });
   };
 
-  var onRoomNumberChange = function () {
-
+  /**
+   * Устанавливает доступные параметры поля Количество гостей
+   */
+  var setGuestNumber = function () {
     guestsNumberOptions.forEach(function (element) {
       element.disabled = !roomNumberMatch[roomNumber.value].includes(element.value);
     });
@@ -94,38 +95,57 @@
     guestsNumber.value = roomNumberMatch[roomNumber.value].includes(guestsNumber.value) ? guestsNumber.value : roomNumberMatch[roomNumber.value][0];
   };
 
+  var onHousingTypeChange = setPriceAttributes;
+
+  var onRoomNumberChange = setGuestNumber;
+
   var onElementChange = function (evt) {
     if (!evt.target.checkValidity()) {
       highlightField(evt.target);
     } else if (invalidFields.indexOf(evt.target) !== -1) {
       unhighlightField(evt.target);
+      invalidFields.splice(invalidFields.indexOf(evt.target), 1);
     }
   };
 
-  title.addEventListener('change', onElementChange);
-
-  housingType.addEventListener('change', onHousingTypeChange);
-
-  price.addEventListener('change', onElementChange);
-
-  arrivalTime.addEventListener('change', function (evt) {
+  var onArrivalTimeChange = function (evt) {
     matchTime(departureTime, evt.target.value);
-  });
+  };
 
-  departureTime.addEventListener('change', function (evt) {
+  var onDepartureTimeChange = function (evt) {
     matchTime(arrivalTime, evt.target.value);
-  });
+  };
 
-  roomNumber.addEventListener('change', onRoomNumberChange);
-
-  noticeForm.addEventListener('invalid', function (evt) {
+  var onNoticeFormInvalid = function (evt) {
     highlightField(evt.target);
-  }, true);
+  };
 
-  resetButton.addEventListener('click', function (evt) {
+  var onResetButtonClick = function (evt) {
     evt.preventDefault();
     window.page.deactivate();
-  });
+  };
+
+  var addListeners = function () {
+    title.addEventListener('change', onElementChange);
+    housingType.addEventListener('change', onHousingTypeChange);
+    price.addEventListener('change', onElementChange);
+    arrivalTime.addEventListener('change', onArrivalTimeChange);
+    departureTime.addEventListener('change', onDepartureTimeChange);
+    roomNumber.addEventListener('change', onRoomNumberChange);
+    noticeForm.addEventListener('invalid', onNoticeFormInvalid, true);
+    resetButton.addEventListener('click', onResetButtonClick);
+  };
+
+  var removeListeners = function () {
+    title.removeEventListener('change', onElementChange);
+    housingType.removeEventListener('change', onHousingTypeChange);
+    price.removeEventListener('change', onElementChange);
+    arrivalTime.removeEventListener('change', onArrivalTimeChange);
+    departureTime.removeEventListener('change', onDepartureTimeChange);
+    roomNumber.removeEventListener('change', onRoomNumberChange);
+    noticeForm.removeEventListener('invalid', onNoticeFormInvalid, true);
+    resetButton.removeEventListener('click', onResetButtonClick);
+  };
 
   disableForm();
 
@@ -135,15 +155,18 @@
       noticeFormFieldsets.forEach(function (item) {
         item.removeAttribute('disabled');
       });
-      onRoomNumberChange();
+      setGuestNumber();
+      addListeners();
     },
     deactivate: function () {
       noticeForm.reset();
       disableForm();
-      onHousingTypeChange();
-      for (var i = invalidFields.length; i > 0; i--) {
-        unhighlightField(invalidFields[0]);
-      }
+      removeListeners();
+      setPriceAttributes();
+      invalidFields.forEach(function (item) {
+        unhighlightField(item);
+      });
+      invalidFields = [];
     },
     setAdressValue: function (value) {
       adressField.value = value;
