@@ -139,6 +139,7 @@
       mainPin.style.top = pinInactiveCordY + 'px';
       window.form.setAdressValue(getMainPinCoords(false));
       map.classList.add('map--faded');
+      dataArray = [];
     }
   };
 })();
