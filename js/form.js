@@ -12,6 +12,7 @@
   var guestsNumber = noticeForm.querySelector('#capacity');
   var guestsNumberOptions = guestsNumber.querySelectorAll('option');
   var resetButton = noticeForm.querySelector('.ad-form__reset');
+  var success = document.querySelector('.success');
   var invalidFields = [];
 
   var housingPriceMatch = {
@@ -95,6 +96,15 @@
     guestsNumber.value = roomNumberMatch[roomNumber.value].includes(guestsNumber.value) ? guestsNumber.value : roomNumberMatch[roomNumber.value][0];
   };
 
+  /**
+   * Закрывает попап с сообщением об отправке формы;
+   */
+  var closePopup = function () {
+    success.classList.add('hidden');
+    document.removeEventListener('click', onClick);
+    document.removeEventListener('keydown', onPopupEscPress);
+  };
+
   var onHousingTypeChange = setPriceAttributes;
 
   var onRoomNumberChange = setGuestNumber;
@@ -125,6 +135,29 @@
     window.page.deactivate();
   };
 
+  var onClick = closePopup;
+
+  var onPopupEscPress = function (evt) {
+    window.utils.checkEscPress(evt.keyCode, closePopup);
+  };
+
+  var onLoadSuccess = function () {
+    window.page.deactivate();
+    success.classList.remove('hidden');
+    document.activeElement.blur();
+    document.addEventListener('keydown', onPopupEscPress);
+    document.addEventListener('click', onClick);
+  };
+
+  var onLoadError = function (errorMessage) {
+    window.getErrorMessage(errorMessage, noticeForm);
+  };
+
+  var onNoticeFormSubmit = function (evt) {
+    window.backend.upload(new FormData(noticeForm), onLoadSuccess, onLoadError);
+    evt.preventDefault();
+  };
+
   var addListeners = function () {
     title.addEventListener('change', onElementChange);
     housingType.addEventListener('change', onHousingTypeChange);
@@ -134,6 +167,7 @@
     roomNumber.addEventListener('change', onRoomNumberChange);
     noticeForm.addEventListener('invalid', onNoticeFormInvalid, true);
     resetButton.addEventListener('click', onResetButtonClick);
+    noticeForm.addEventListener('submit', onNoticeFormSubmit);
   };
 
   var removeListeners = function () {
@@ -145,6 +179,7 @@
     roomNumber.removeEventListener('change', onRoomNumberChange);
     noticeForm.removeEventListener('invalid', onNoticeFormInvalid, true);
     resetButton.removeEventListener('click', onResetButtonClick);
+    noticeForm.removeEventListener('submit', onNoticeFormSubmit);
   };
 
   disableForm();

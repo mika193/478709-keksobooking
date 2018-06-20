@@ -1,6 +1,9 @@
 'use strict';
 
 (function () {
+  /** @constant {number} */
+  var ESC_CODE = 27;
+
   window.utils = {
     /**
    * Возвращает слово с правильным окончанием
@@ -21,37 +24,10 @@
       }
     },
 
-    /**
-    * Генерирует случайное число в заданном диапазоне
-    * @param {number} min - минимальное значение генерируемого числа
-    * @param {number} max - максимальное значение генерируемого числа
-    * @return {number}
-    */
-    getRandomNumber: function (min, max) {
-      return Math.random() * (max - min) + min;
-    },
-
-    /**
-   * Создает массив случайно расположенных элементов
-   * @param {Array.<string>} array - массив с исходным списком строк
-   * @param {number} length - необходимая длина массива
-   * @param {boolean} unique - определяет будут ли повторяться элементы в новом массиве
-   * @return {Array.<string>}
-   */
-    createRandomArray: function (array, length, unique) {
-      var newArray = [];
-      var i = 0;
-      while (i < length) {
-        var elementIndex = Math.floor(window.utils.getRandomNumber(0, array.length));
-        if ((newArray.indexOf(array[elementIndex]) !== -1) && (unique)) {
-          continue;
-        }
-
-        i++;
-        newArray.push(array[elementIndex]);
+    checkEscPress: function (keyCode, cb) {
+      if (keyCode === ESC_CODE) {
+        cb();
       }
-
-      return newArray;
     }
   };
 })();

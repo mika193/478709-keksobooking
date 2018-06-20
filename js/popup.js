@@ -1,9 +1,6 @@
 'use strict';
 
 (function () {
-  /** @constant {number} */
-  var ESC_CODE = 27;
-
   var mapCardTemplate = document.querySelector('template').content.querySelector('.map__card');
   var map = document.querySelector('.map');
   var mapFilters = map.querySelector('.map__filters-container');
@@ -63,9 +60,7 @@
   };
 
   var onPopupEscPress = function (evt) {
-    if (evt.keyCode === ESC_CODE) {
-      closePopup();
-    }
+    window.utils.checkEscPress(evt.keyCode, closePopup);
   };
 
   /**

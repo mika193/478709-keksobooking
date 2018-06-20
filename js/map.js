@@ -1,8 +1,5 @@
 'use strict';
 (function () {
-  /** @constant {number} */
-  var NUMBER_OF_ADS = 8;
-
   var map = document.querySelector('.map');
   var mapPinsContainer = document.querySelector('.map__pins');
   var mainPin = document.querySelector('.map__pin--main');
@@ -10,7 +7,6 @@
   var pinInactiveCordX = mainPin.offsetLeft;
   var fragment = document.createDocumentFragment();
   var mapPins = [];
-  var dataArray = [];
 
   var mainPinParams = {
     WIDTH: 65,
@@ -41,18 +37,6 @@
     var mainPinCordX = mainPin.offsetLeft + Math.floor(mainPinParams.WIDTH / 2);
     var mainPinCordY = (active) ? mainPin.offsetTop + mainPinParams.ACTIVE_HEIGHT : mainPin.offsetTop + Math.floor(mainPinParams.HEIGHT / 2);
     return mainPinCordX + ', ' + mainPinCordY;
-  };
-
-  /**
-   * Добавляет пины на страницу
-   */
-  var addPins = function () {
-    dataArray.forEach(function (item) {
-      var pin = window.pin.create(item);
-      fragment.appendChild(pin);
-      mapPins.push(pin);
-    });
-    mapPinsContainer.appendChild(fragment);
   };
 
   /**
@@ -113,22 +97,25 @@
     document.addEventListener('mouseup', onMainPinMouseUp);
   };
 
+  var onLoadSuccess = function (array) {
+    array.forEach(function (item) {
+      var pin = window.pin.create(item);
+      fragment.appendChild(pin);
+      mapPins.push(pin);
+    });
+    mapPinsContainer.appendChild(fragment);
+  };
+
+  var onLoadError = function (errorMessage) {
+    window.getErrorMessage(errorMessage, map);
+  };
+
   window.form.setAdressValue(getMainPinCoords(false));
   mainPin.addEventListener('mousedown', onMainPinMouseDown);
 
-  /**
-   * Создает массив объявлений
-   */
-  var getDataArray = function () {
-    for (var i = 0; i < NUMBER_OF_ADS; i++) {
-      dataArray.push(window.getData(i));
-    }
-  };
-
   window.map = {
     init: function () {
-      getDataArray();
-      addPins();
+      window.backend.load(onLoadSuccess, onLoadError);
       map.classList.remove('map--faded');
     },
 
@@ -139,7 +126,6 @@
       mainPin.style.top = pinInactiveCordY + 'px';
       window.form.setAdressValue(getMainPinCoords(false));
       map.classList.add('map--faded');
-      dataArray = [];
     }
   };
 })();
