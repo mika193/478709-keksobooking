@@ -138,7 +138,7 @@
   var onClick = closePopup;
 
   var onPopupEscPress = function (evt) {
-    window.utils.checkEscPress(evt.keyCode, closePopup);
+    window.utils.callFunctionIfEscPress(evt.keyCode, closePopup);
   };
 
   var onLoadSuccess = function () {

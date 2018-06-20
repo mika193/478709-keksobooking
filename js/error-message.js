@@ -20,7 +20,7 @@
     message.style.fontSize = messageParams.FONT_SIZE;
     message.textContent = errorMessage;
     var onEscPress = function (evt) {
-      window.utils.checkEscPress(evt.keyCode, function () {
+      window.utils.callFunctionIfEscPress(evt.keyCode, function () {
         parent.removeChild(message);
         document.removeEventListener('keydown', onEscPress);
       });

@@ -24,7 +24,7 @@
       }
     },
 
-    checkEscPress: function (keyCode, cb) {
+    callFunctionIfEscPress: function (keyCode, cb) {
       if (keyCode === ESC_CODE) {
         cb();
       }
