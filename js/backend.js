@@ -21,11 +21,10 @@
     var xhr = new XMLHttpRequest();
     xhr.responseType = 'json';
     xhr.addEventListener('load', function () {
+
+
       if (xhr.status === 200) {
-        if (method === 'POST') {
-          onLoad();
-        }
-        onLoad(xhr.response);
+        onLoad((method === 'POST') ? '' : xhr.response);
       } else {
         onError(errorText.unknown);
       }
