@@ -10,7 +10,7 @@
     FONT_SIZE: '30px'
   };
 
-  window.getErrorMessage = function (errorMessage, parent) {
+  window.getErrorMessage = function (errorMessage) {
     var message = document.createElement('div');
     message.style = messageParams.STYLE;
     message.style.position = messageParams.POSITION;
@@ -21,11 +21,11 @@
     message.textContent = errorMessage;
     var onEscPress = function (evt) {
       window.utils.callFunctionIfEscPress(evt.keyCode, function () {
-        parent.removeChild(message);
+        document.body.removeChild(message);
         document.removeEventListener('keydown', onEscPress);
       });
     };
     document.addEventListener('keydown', onEscPress);
-    parent.appendChild(message);
+    document.body.appendChild(message);
   };
 })();

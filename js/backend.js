@@ -1,4 +1,5 @@
 'use strict';
+
 (function () {
   var urlType = {
     LOAD: 'https://js.dump.academy/keksobooking/data',
@@ -20,18 +21,19 @@
   var getXhr = function (onLoad, onError, method, errorText, url, data) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = 'json';
+
     xhr.addEventListener('load', function () {
-
-
       if (xhr.status === 200) {
         onLoad((method === 'POST') ? '' : xhr.response);
       } else {
         onError(errorText.unknown);
       }
     });
+
     xhr.addEventListener('error', function () {
       onError(errorText.server);
     });
+
     xhr.addEventListener('timeout', function () {
       onError(errorText.timeout);
     });

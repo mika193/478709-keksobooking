@@ -1,17 +1,18 @@
 'use strict';
+
 (function () {
-  var noticeForm = document.querySelector('.ad-form');
-  var noticeFormFieldsets = noticeForm.querySelectorAll('fieldset');
-  var title = noticeForm.querySelector('#title');
-  var adressField = noticeForm.querySelector('#address');
-  var housingType = noticeForm.querySelector('#type');
-  var price = noticeForm.querySelector('#price');
-  var arrivalTime = noticeForm.querySelector('#timein');
-  var departureTime = noticeForm.querySelector('#timeout');
-  var roomNumber = noticeForm.querySelector('#room_number');
-  var guestsNumber = noticeForm.querySelector('#capacity');
+  var form = document.querySelector('.ad-form');
+  var formFieldsets = form.querySelectorAll('fieldset');
+  var title = form.querySelector('#title');
+  var adressField = form.querySelector('#address');
+  var housingType = form.querySelector('#type');
+  var price = form.querySelector('#price');
+  var arrivalTime = form.querySelector('#timein');
+  var departureTime = form.querySelector('#timeout');
+  var roomNumber = form.querySelector('#room_number');
+  var guestsNumber = form.querySelector('#capacity');
   var guestsNumberOptions = guestsNumber.querySelectorAll('option');
-  var resetButton = noticeForm.querySelector('.ad-form__reset');
+  var reset = form.querySelector('.ad-form__reset');
   var success = document.querySelector('.success');
   var invalidFields = [];
 
@@ -79,8 +80,8 @@
    * Делает поля формы недоступными
    */
   var disableForm = function () {
-    noticeForm.classList.add('ad-form--disabled');
-    noticeFormFieldsets.forEach(function (item) {
+    form.classList.add('ad-form--disabled');
+    formFieldsets.forEach(function (item) {
       item.setAttribute('disabled', 'disabled');
     });
   };
@@ -126,11 +127,11 @@
     matchTime(arrivalTime, evt.target.value);
   };
 
-  var onNoticeFormInvalid = function (evt) {
+  var onFormInvalid = function (evt) {
     highlightField(evt.target);
   };
 
-  var onResetButtonClick = function (evt) {
+  var onResetClick = function (evt) {
     evt.preventDefault();
     window.page.deactivate();
   };
@@ -150,11 +151,11 @@
   };
 
   var onLoadError = function (errorMessage) {
-    window.getErrorMessage(errorMessage, noticeForm);
+    window.getErrorMessage(errorMessage);
   };
 
-  var onNoticeFormSubmit = function (evt) {
-    window.backend.upload(new FormData(noticeForm), onLoadSuccess, onLoadError);
+  var onFormSubmit = function (evt) {
+    window.backend.upload(new FormData(form), onLoadSuccess, onLoadError);
     evt.preventDefault();
   };
 
@@ -165,9 +166,9 @@
     arrivalTime.addEventListener('change', onArrivalTimeChange);
     departureTime.addEventListener('change', onDepartureTimeChange);
     roomNumber.addEventListener('change', onRoomNumberChange);
-    noticeForm.addEventListener('invalid', onNoticeFormInvalid, true);
-    resetButton.addEventListener('click', onResetButtonClick);
-    noticeForm.addEventListener('submit', onNoticeFormSubmit);
+    form.addEventListener('invalid', onFormInvalid, true);
+    reset.addEventListener('click', onResetClick);
+    form.addEventListener('submit', onFormSubmit);
   };
 
   var removeListeners = function () {
@@ -177,24 +178,24 @@
     arrivalTime.removeEventListener('change', onArrivalTimeChange);
     departureTime.removeEventListener('change', onDepartureTimeChange);
     roomNumber.removeEventListener('change', onRoomNumberChange);
-    noticeForm.removeEventListener('invalid', onNoticeFormInvalid, true);
-    resetButton.removeEventListener('click', onResetButtonClick);
-    noticeForm.removeEventListener('submit', onNoticeFormSubmit);
+    form.removeEventListener('invalid', onFormInvalid, true);
+    reset.removeEventListener('click', onResetClick);
+    form.removeEventListener('submit', onFormSubmit);
   };
 
   disableForm();
 
   window.form = {
     init: function () {
-      noticeForm.classList.remove('ad-form--disabled');
-      noticeFormFieldsets.forEach(function (item) {
+      form.classList.remove('ad-form--disabled');
+      formFieldsets.forEach(function (item) {
         item.removeAttribute('disabled');
       });
       setGuestNumber();
       addListeners();
     },
     deactivate: function () {
-      noticeForm.reset();
+      form.reset();
       disableForm();
       removeListeners();
       setPriceAttributes();
