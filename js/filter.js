@@ -1,7 +1,8 @@
 'use strict';
 
 (function () {
-  var ARRAY_LENGTH = 5;
+  var NUMBER_OF_PINS = 5;
+  var TIMEOUT = 500;
   var filter = document.querySelector('.map__filters');
   var type = filter.querySelector('#housing-type');
   var price = filter.querySelector('#housing-price');
@@ -20,16 +21,12 @@
     },
     'low': {
       MIN: 0,
-      MAX: 10000
+      MAX: 9999
     },
     'high': {
-      MIN: 50000,
+      MIN: 50001,
       MAX: Infinity
     }
-  };
-
-  var debounce = function (cb) {
-    setTimeout(cb, 500);
   };
 
   /**
@@ -37,7 +34,7 @@
    * @param {Array.<Node>} array - массив фильтров
    * @param {boolean} value - значение активности/неактивности
    */
-  var toggleFilterAccessibility = function (array, value) {
+  var toggleFilterAvailability = function (array, value) {
     array.forEach(function (item) {
       item.disabled = value;
     });
@@ -47,16 +44,35 @@
    * Деактивирует фильтры
    */
   var deactivateFilters = function () {
-    toggleFilterAccessibility(selects, true);
-    toggleFilterAccessibility(features, true);
+    toggleFilterAvailability(selects, true);
+    toggleFilterAvailability(features, true);
   };
 
   /**
-   * Фильтрует объявления
+   * Фильтрует объявления по переданному параметру
+   * @param {Node} element - элемент на основании значения которого происходит фильтрация
+   * @param {string} key - ключ для фильтрации
+   * @param {string|number|Object} value - значение, по которому происходит фильтрация
+   */
+  var filterAdsByParam = function (element, key, value) {
+    newArray = newArray.filter(function (item) {
+      var filterValue = item.offer[key] === value;
+
+      if (key === 'price') {
+        filterValue = item.offer[key] >= value.min && item.offer[key] <= value.max;
+      }
+
+      return (element.value === 'any') ? item : filterValue;
+    });
+  };
+
+  /**
+   * Фильтрует объявления по всем параметрам
    * @param {Array.<Object>} array - массив объявлений
    */
   var filterAds = function (array) {
-    newArray = array;
+    newArray = array.slice(0);
+
     var featuresChecked = Array.from(features).filter(function (item) {
       return item.checked;
     });
@@ -67,14 +83,13 @@
       });
     });
 
-    newArray = newArray.filter(function (item) {
-      var typeFilter = (type.value === 'any') ? item : item.offer.type === type.value;
-      var priceFilter = (price.value === 'any') ? item : (item.offer.price >= priceMatch[price.value].MIN) && (item.offer.price <= priceMatch[price.value].MAX);
-      var roomsFilter = (rooms.value === 'any') ? item : item.offer.rooms === Number(rooms.value);
-      var guestsFilter = (guests.value === 'any') ? item : item.offer.guests === Number(guests.value);
+    filterAdsByParam(type, 'type', type.value);
 
-      return typeFilter && priceFilter && roomsFilter && guestsFilter;
-    });
+    filterAdsByParam(price, 'price', {min: priceMatch[price.value].MIN, max: priceMatch[price.value].MAX});
+
+    filterAdsByParam(rooms, 'rooms', Number(rooms.value));
+
+    filterAdsByParam(guests, 'guests', Number(guests.value));
   };
 
   /**
@@ -83,16 +98,17 @@
   var applyFilters = function () {
     window.popup.close();
     window.pins.remove();
-    window.pins.create(newArray.slice(0, ARRAY_LENGTH));
+    window.pins.create(newArray.slice(0, NUMBER_OF_PINS));
   };
 
   var onSelectsChange = function () {
     filterAds(data);
-    debounce(applyFilters());
+    window.utils.debounce(applyFilters(), TIMEOUT);
   };
 
   var onFeaturesClick = function () {
     filterAds(data);
+    window.utils.debounce(applyFilters(), TIMEOUT);
   };
 
   var adListeners = function () {
@@ -118,10 +134,10 @@
   window.filter = {
     apply: function (array) {
       data = array;
-      toggleFilterAccessibility(selects, false);
-      toggleFilterAccessibility(features, false);
+      toggleFilterAvailability(selects, false);
+      toggleFilterAvailability(features, false);
       adListeners();
-      return array.slice(0, ARRAY_LENGTH);
+      return array.slice(0, NUMBER_OF_PINS);
     },
 
     deactivate: function () {
