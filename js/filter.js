@@ -133,7 +133,7 @@
 
   window.filter = {
     apply: function (array) {
-      data = array;
+      data = array.slice(0);
       toggleFilterAvailability(selects, false);
       toggleFilterAvailability(features, false);
       adListeners();

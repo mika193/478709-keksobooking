@@ -82,7 +82,7 @@
   var disableForm = function () {
     form.classList.add('ad-form--disabled');
     formFieldsets.forEach(function (item) {
-      item.setAttribute('disabled', 'disabled');
+      item.disabled = true;
     });
   };
 
@@ -189,7 +189,7 @@
     init: function () {
       form.classList.remove('ad-form--disabled');
       formFieldsets.forEach(function (item) {
-        item.removeAttribute('disabled');
+        item.disabled = false;
       });
       setGuestNumber();
       addListeners();
