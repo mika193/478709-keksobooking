@@ -55,15 +55,17 @@
    * @param {string|number|Object} value - значение, по которому происходит фильтрация
    */
   var filterAdsByParam = function (element, key, value) {
-    newArray = newArray.filter(function (item) {
-      var filterValue = item.offer[key] === value;
+    if (element.value !== 'any') {
+      newArray = newArray.filter(function (item) {
+        var filterValue = item.offer[key] === value;
 
-      if (key === 'price') {
-        filterValue = item.offer[key] >= value.min && item.offer[key] <= value.max;
-      }
+        if (key === 'price') {
+          filterValue = item.offer[key] >= value.min && item.offer[key] <= value.max;
+        }
 
-      return (element.value === 'any') ? item : filterValue;
-    });
+        return filterValue;
+      });
+    }
   };
 
   /**
