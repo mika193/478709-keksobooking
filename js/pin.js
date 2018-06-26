@@ -4,7 +4,7 @@
   var mapPinTemplate = document.querySelector('template').content.querySelector('.map__pin');
   var activePin;
 
-  var pinParams = {
+  var PinParam = {
     WIDTH: 50,
     HEIGHT: 70
   };
@@ -38,8 +38,8 @@
     create: function (dataObject) {
       var pin = mapPinTemplate.cloneNode(true);
       var pinImage = pin.querySelector('img');
-      pin.style.left = (dataObject.location.x - pinParams.WIDTH / 2) + 'px';
-      pin.style.top = (dataObject.location.y - pinParams.HEIGHT) + 'px';
+      pin.style.left = (dataObject.location.x - PinParam.WIDTH / 2) + 'px';
+      pin.style.top = (dataObject.location.y - PinParam.HEIGHT) + 'px';
       pinImage.src = dataObject.author.avatar;
       pinImage.alt = dataObject.offer.title;
       pin.addEventListener('click', function (evt) {

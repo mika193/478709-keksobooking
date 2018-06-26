@@ -9,7 +9,7 @@
     x: mainPin.offsetLeft,
   };
 
-  var mainPinParams = {
+  var MainPinParam = {
     WIDTH: 65,
     HEIGHT: 65,
     ACTIVE_HEIGHT: 81,
@@ -20,13 +20,13 @@
   };
 
   var topCord = {
-    min: mainPinParams.Y_COORD_MIN - mainPinParams.ACTIVE_HEIGHT,
-    max: mainPinParams.Y_COORD_MAX - mainPinParams.ACTIVE_HEIGHT
+    min: MainPinParam.Y_COORD_MIN - MainPinParam.ACTIVE_HEIGHT,
+    max: MainPinParam.Y_COORD_MAX - MainPinParam.ACTIVE_HEIGHT
   };
 
   var leftCord = {
-    min: mainPinParams.X_COORD_MIN - Math.floor(mainPinParams.WIDTH / 2),
-    max: mainPinParams.X_COORD_MAX - Math.floor(mainPinParams.WIDTH / 2)
+    min: MainPinParam.X_COORD_MIN - Math.floor(MainPinParam.WIDTH / 2),
+    max: MainPinParam.X_COORD_MAX - Math.floor(MainPinParam.WIDTH / 2)
   };
 
   /**
@@ -35,8 +35,8 @@
    * @return {string}
    */
   var getMainPinCoords = function (active) {
-    var mainPinCordX = mainPin.offsetLeft + Math.floor(mainPinParams.WIDTH / 2);
-    var mainPinCordY = (active) ? mainPin.offsetTop + mainPinParams.ACTIVE_HEIGHT : mainPin.offsetTop + Math.floor(mainPinParams.HEIGHT / 2);
+    var mainPinCordX = mainPin.offsetLeft + Math.floor(MainPinParam.WIDTH / 2);
+    var mainPinCordY = (active) ? mainPin.offsetTop + MainPinParam.ACTIVE_HEIGHT : mainPin.offsetTop + Math.floor(MainPinParam.HEIGHT / 2);
     return mainPinCordX + ', ' + mainPinCordY;
   };
 

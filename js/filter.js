@@ -72,8 +72,8 @@
    * Фильтрует объявления по всем параметрам
    * @param {Array.<Object>} array - массив объявлений
    */
-  var filterAds = function (array) {
-    newArray = array.slice(0);
+  var filterAds = function () {
+    newArray = data.slice(0);
 
     var featuresChecked = Array.from(features).filter(function (item) {
       return item.checked;
@@ -89,30 +89,32 @@
 
     filterAdsByParam(price, 'price', {min: priceMatch[price.value].MIN, max: priceMatch[price.value].MAX});
 
-    filterAdsByParam(rooms, 'rooms', Number(rooms.value));
+    filterAdsByParam(rooms, 'rooms', parseInt(rooms.value, 10));
 
-    filterAdsByParam(guests, 'guests', Number(guests.value));
+    filterAdsByParam(guests, 'guests', parseInt(guests.value, 10));
   };
 
   /**
    * Применяет фильтры на странице, отрисовывает пины
    */
   var applyFilters = function () {
+    filterAds();
     window.popup.close();
     window.pins.remove();
     window.pins.create(newArray.slice(0, NUMBER_OF_PINS));
   };
 
   var onSelectsChange = function () {
-    filterAds(data);
-    window.utils.debounce(applyFilters(), TIMEOUT);
+    window.utils.debounce(applyFilters, TIMEOUT);
   };
 
   var onFeaturesClick = function () {
-    filterAds(data);
-    window.utils.debounce(applyFilters(), TIMEOUT);
+    window.utils.debounce(applyFilters, TIMEOUT);
   };
 
+  /**
+   * Добавляет обработчики событий на фильтры
+   */
   var adListeners = function () {
     selects.forEach(function (item) {
       item.addEventListener('change', onSelectsChange);
@@ -122,6 +124,9 @@
     });
   };
 
+  /**
+   * Удаляет обработчики событий с фильтров
+   */
   var removeListeners = function () {
     selects.forEach(function (item) {
       item.removeEventListener('change', onSelectsChange);

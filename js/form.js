@@ -159,6 +159,9 @@
     evt.preventDefault();
   };
 
+  /**
+   * Добавляет обработчики событий на форму и ее элементы
+   */
   var addListeners = function () {
     title.addEventListener('change', onElementChange);
     housingType.addEventListener('change', onHousingTypeChange);
@@ -171,6 +174,9 @@
     form.addEventListener('submit', onFormSubmit);
   };
 
+  /**
+   * Удаляет обработчики событий с формы и ее элементов
+   */
   var removeListeners = function () {
     title.removeEventListener('change', onElementChange);
     housingType.removeEventListener('change', onHousingTypeChange);

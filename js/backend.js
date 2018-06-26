@@ -1,6 +1,8 @@
 'use strict';
 
 (function () {
+  var SUCCESS_CODE = 200;
+
   var urlType = {
     LOAD: 'https://js.dump.academy/keksobooking/data',
     UPLOAD: 'https://js.dump.academy/keksobooking/'
@@ -23,7 +25,7 @@
     xhr.responseType = 'json';
 
     xhr.addEventListener('load', function () {
-      if (xhr.status === 200) {
+      if (xhr.status === SUCCESS_CODE) {
         onLoad((method === 'POST') ? '' : xhr.response);
       } else {
         onError(errorText.unknown);
