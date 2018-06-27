@@ -52,7 +52,7 @@
    */
   var closePopup = function () {
     if (activeCard) {
-      map.removeChild(activeCard);
+      activeCard.remove();
       document.removeEventListener('keydown', onPopupEscPress);
       activeCard = null;
       window.pin.deactivate();

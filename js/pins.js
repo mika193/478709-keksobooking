@@ -17,7 +17,7 @@
 
     remove: function () {
       mapPins.forEach(function (item) {
-        mapPinsContainer.removeChild(item);
+        item.remove();
       });
       mapPins = [];
     }
