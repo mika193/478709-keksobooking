@@ -1,8 +1,12 @@
 'use strict';
 
 (function () {
+  /** @constant {number} */
   var NUMBER_OF_PINS = 5;
+
+  /** @constant {number} */
   var TIMEOUT = 500;
+
   var filter = document.querySelector('.map__filters');
   var type = filter.querySelector('#housing-type');
   var price = filter.querySelector('#housing-price');

@@ -1,6 +1,7 @@
 'use strict';
 
 (function () {
+  /** @constant {number} */
   var SUCCESS_CODE = 200;
 
   var urlType = {
@@ -20,6 +21,15 @@
     server: 'Что-то случилось с сервером, видимо мы где-то накосячили ¯\\_(ツ)_/¯ Пожалуйста, перезагрузите страницу!'
   };
 
+  /**
+   * создает Xhr
+   * @param {function} onLoad - функция, запускающаяся при успешной загрузке данных
+   * @param {function} onError - функция, запускающаяся при неудачной загрузке данных
+   * @param {string} method - метод отправки данных на сервер
+   * @param {Object} errorText - объект, содержащий тексты, выводимые при ошибках
+   * @param {string} url - адрес, на который отправляются данные
+   * @param {Object} data - данные формы, отправляемые на сервер
+   */
   var getXhr = function (onLoad, onError, method, errorText, url, data) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = 'json';

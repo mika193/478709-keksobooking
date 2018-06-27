@@ -1,6 +1,7 @@
 'use strict';
 
 (function () {
+  /** @constant {string} */
   var AVATAR_EXT = 'img/muffin-grey.svg';
 
   var form = document.querySelector('.ad-form');
@@ -143,7 +144,7 @@
   };
 
   /**
-   * Удаляет изображения
+   * Удаляет изображения, добавленные на страницу пользователем
    */
   var deleteImages = function () {
     images.forEach(function (item) {
@@ -161,10 +162,12 @@
   var displayImage = function (files, cb) {
     var reader = new FileReader();
     Array.from(files).forEach(function (item) {
-      reader.readAsDataURL(item);
-      reader.addEventListener('load', function () {
-        cb(reader.result);
-      });
+      if (item.type.includes('image/')) {
+        reader.readAsDataURL(item);
+        reader.addEventListener('load', function () {
+          cb(reader.result);
+        });
+      }
     });
   };
 

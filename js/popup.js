@@ -47,7 +47,7 @@
     return element;
   };
 
-    /**
+  /**
    * Закрывает попап с объявлением
    */
   var closePopup = function () {

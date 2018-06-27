@@ -7,11 +7,11 @@
 
   window.utils = {
     /**
-   * Возвращает слово с правильным окончанием
-   * @param {number} number - число в соответствии с которым изменяется слово
-   * @param {Array.<string>} array - массив вариантов написания слова в порядке: единственное число, множественное для number от 2 до 4 включительно, множественное для number от 5 включительно
-   * @return {string}
-   */
+     * Возвращает слово с правильным окончанием
+     * @param {number} number - число в соответствии с которым изменяется слово
+     * @param {Array.<string>} array - массив вариантов написания слова в порядке: единственное число, множественное для number от 2 до 4 включительно, множественное для number от 5 включительно
+     * @return {string}
+     */
     getDeclension: function (number, array) {
       if ((number % 100 < 20) && (number % 100 >= 5)) {
         return array[2];
@@ -25,12 +25,22 @@
       }
     },
 
+    /**
+     * Вызывает функцию, если был нажат Esc
+     * @param {number} keyCode - код нажатой клавиши
+     * @param {function} cb - вызываемая функция
+     */
     callFunctionIfEscPress: function (keyCode, cb) {
       if (keyCode === ESC_CODE) {
         cb();
       }
     },
 
+    /**
+     * Устраняет дребез при многократном вызове функции
+     * @param {function} cb - вызываемая функция
+     * @param {number} timeout - отсрочка выполнения
+     */
     debounce: function (cb, timeout) {
       clearTimeout(debounceTimeout);
       debounceTimeout = setTimeout(cb, timeout);
