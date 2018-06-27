@@ -181,7 +181,7 @@
   var onRoomNumberChange = setGuestNumber;
 
   var onElementInput = function (evt) {
-    if (evt.target.checkValidity) {
+    if (evt.target.checkValidity()) {
       unhighlightField(evt.target);
       evt.target.removeEventListener('input', onElementInput);
     }
