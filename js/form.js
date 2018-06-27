@@ -20,6 +20,7 @@
   var photoBox = document.querySelector('.ad-form__photo');
   var avatar = document.querySelector('.ad-form-header__input');
   var photo = document.querySelector('.ad-form__input');
+  var photoContainer = document.querySelector('.ad-form__photo-container');
   var invalidFields = [];
   var images = [];
 
@@ -131,12 +132,14 @@
    * @param {string} value - значение, которое будет записано в src
    */
   var displayPhoto = function (value) {
+    var imageContainer = photoBox.cloneNode();
     var image = document.createElement('img');
     image.src = value;
     image.style.width = PhotoParam.WIDTH;
     image.style.height = PhotoParam.HEIGHT;
     images.push(image);
-    photoBox.appendChild(image);
+    imageContainer.appendChild(image);
+    photoContainer.insertBefore(imageContainer, photoBox);
   };
 
   /**
