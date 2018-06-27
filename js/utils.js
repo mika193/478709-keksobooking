@@ -3,6 +3,7 @@
 (function () {
   /** @constant {number} */
   var ESC_CODE = 27;
+  var debounceTimeout;
 
   window.utils = {
     /**
@@ -28,6 +29,11 @@
       if (keyCode === ESC_CODE) {
         cb();
       }
+    },
+
+    debounce: function (cb, timeout) {
+      clearTimeout(debounceTimeout);
+      debounceTimeout = setTimeout(cb, timeout);
     }
   };
 })();

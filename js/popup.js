@@ -13,7 +13,7 @@
     'bungalo': 'Бунгало',
   };
 
-  var photoParams = {
+  var PhotoParam = {
     WIDTH: 45,
     HEIGHT: 40,
     ALT: 'Фотография жилья',
@@ -40,10 +40,10 @@
   var getPhoto = function (link) {
     var element = document.createElement('img');
     element.src = link;
-    element.style.width = photoParams.WIDTH + 'px';
-    element.style.height = photoParams.HEIGHT + 'px';
-    element.alt = photoParams.ALT;
-    element.classList.add(photoParams.CLASS);
+    element.style.width = PhotoParam.WIDTH + 'px';
+    element.style.height = PhotoParam.HEIGHT + 'px';
+    element.alt = PhotoParam.ALT;
+    element.classList.add(PhotoParam.CLASS);
     return element;
   };
 

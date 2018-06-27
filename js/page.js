@@ -1,4 +1,5 @@
 'use strict';
+
 (function () {
   var activatedPage = false;
 
@@ -13,6 +14,7 @@
     deactivate: function () {
       window.form.deactivate();
       window.map.deactivate();
+      window.filter.deactivate();
       activatedPage = false;
     }
   };
