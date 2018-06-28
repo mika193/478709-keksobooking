@@ -33,15 +33,15 @@
   var housingPriceMatch = {
     'bungalo': {
       MIN_VALUE: '0',
-      PLACEHOLDER: '0',
+      PLACEHOLDER: '0'
     },
     'flat': {
       MIN_VALUE: '1000',
-      PLACEHOLDER: '1 000',
+      PLACEHOLDER: '1 000'
     },
     'house': {
       MIN_VALUE: '5000',
-      PLACEHOLDER: '5 000',
+      PLACEHOLDER: '5 000'
     },
     'palace': {
       MIN_VALUE: '10000',
@@ -108,7 +108,8 @@
       element.disabled = !roomNumberMatch[roomNumber.value].includes(element.value);
     });
 
-    guestsNumber.value = roomNumberMatch[roomNumber.value].includes(guestsNumber.value) ? guestsNumber.value : roomNumberMatch[roomNumber.value][0];
+    guestsNumber.value = roomNumberMatch[roomNumber.value].includes(guestsNumber.value) ?
+      guestsNumber.value : roomNumberMatch[roomNumber.value][0];
   };
 
   /**

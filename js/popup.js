@@ -10,7 +10,7 @@
     'flat': 'Квартира',
     'palace': 'Дворец',
     'house': 'Дом',
-    'bungalo': 'Бунгало',
+    'bungalo': 'Бунгало'
   };
 
   var PhotoParam = {
@@ -77,8 +77,12 @@
     card.querySelector('.popup__text--address').textContent = dataObject.offer.adress;
     card.querySelector('.popup__text--price').textContent = dataObject.offer.price + '₽/ночь';
     card.querySelector('.popup__type').textContent = offerTypesTranslation[dataObject.offer.type];
-    card.querySelector('.popup__text--capacity').textContent = dataObject.offer.rooms + ' ' + window.utils.getDeclension(dataObject.offer.rooms, ['комната', 'комнаты', 'комнат']) + ' для ' + dataObject.offer.guests + ' ' + window.utils.getDeclension(dataObject.offer.guests, ['гостя', 'гостей', 'гостей']);
-    card.querySelector('.popup__text--time').textContent = 'Заезд после ' + dataObject.offer.checkin + ', выезд до ' + dataObject.offer.checkout;
+    card.querySelector('.popup__text--capacity').textContent = dataObject.offer.rooms +
+      ' ' + window.utils.getDeclension(dataObject.offer.rooms, ['комната', 'комнаты', 'комнат']) +
+      ' для ' + dataObject.offer.guests + ' ' +
+      window.utils.getDeclension(dataObject.offer.guests, ['гостя', 'гостей', 'гостей']);
+    card.querySelector('.popup__text--time').textContent = 'Заезд после ' + dataObject.offer.checkin +
+      ', выезд до ' + dataObject.offer.checkout;
     card.querySelector('.popup__description').textContent = dataObject.offer.description;
 
     dataObject.offer.features.forEach(function (item) {
