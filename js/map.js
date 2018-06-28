@@ -6,7 +6,7 @@
 
   var pinInactiveCord = {
     y: mainPin.offsetTop,
-    x: mainPin.offsetLeft,
+    x: mainPin.offsetLeft
   };
 
   var MainPinParam = {
@@ -36,7 +36,8 @@
    */
   var getMainPinCoords = function (active) {
     var mainPinCordX = mainPin.offsetLeft + Math.floor(MainPinParam.WIDTH / 2);
-    var mainPinCordY = (active) ? mainPin.offsetTop + MainPinParam.ACTIVE_HEIGHT : mainPin.offsetTop + Math.floor(MainPinParam.HEIGHT / 2);
+    var mainPinCordY = (active) ? mainPin.offsetTop + MainPinParam.ACTIVE_HEIGHT :
+      mainPin.offsetTop + Math.floor(MainPinParam.HEIGHT / 2);
     return mainPinCordX + ', ' + mainPinCordY;
   };
 

@@ -9,16 +9,16 @@
     UPLOAD: 'https://js.dump.academy/keksobooking/'
   };
 
-  var loadErrorText = {
-    unknown: 'Произошла неизвестная ошибка, видимо мы где-то накосячили ¯\\_(ツ)_/¯ Пожалуйста, перезагрузите страницу!',
-    timeout: 'Сервер долго не отвечает, видимо мы где-то накосячили ¯\\_(ツ)_/¯ Пожалуйста, перезагрузите страницу!',
-    server: 'Что-то случилось с сервером, видимо мы где-то накосячили ¯\\_(ツ)_/¯ Пожалуйста, перезагрузите страницу!'
+  var LoadErrorText = {
+    UNKNOWN: 'Произошла неизвестная ошибка, видимо мы где-то накосячили ¯\\_(ツ)_/¯ Пожалуйста, перезагрузите страницу!',
+    TIMEOUT: 'Сервер долго не отвечает, видимо мы где-то накосячили ¯\\_(ツ)_/¯ Пожалуйста, перезагрузите страницу!',
+    SERVER: 'Что-то случилось с сервером, видимо мы где-то накосячили ¯\\_(ツ)_/¯ Пожалуйста, перезагрузите страницу!'
   };
 
-  var uploadErrorText = {
-    unknown: 'Произошла неизвестная ошибка, видимо мы где-то накосячили ¯\\_(ツ)_/¯ Пожалуйста, отправьте форму еще раз!',
-    timeout: 'Сервер долго не отвечает, видимо мы где-то накосячили ¯\\_(ツ)_/¯ Пожалуйста, перезагрузите страницу!',
-    server: 'Что-то случилось с сервером, видимо мы где-то накосячили ¯\\_(ツ)_/¯ Пожалуйста, перезагрузите страницу!'
+  var UploadErrorText = {
+    UNKNOWN: 'Произошла неизвестная ошибка, видимо мы где-то накосячили ¯\\_(ツ)_/¯ Пожалуйста, отправьте форму еще раз!',
+    TIMEOUT: 'Сервер долго не отвечает, видимо мы где-то накосячили ¯\\_(ツ)_/¯ Пожалуйста, перезагрузите страницу!',
+    SERVER: 'Что-то случилось с сервером, видимо мы где-то накосячили ¯\\_(ツ)_/¯ Пожалуйста, перезагрузите страницу!'
   };
 
   /**
@@ -28,7 +28,7 @@
    * @param {string} method - метод отправки данных на сервер
    * @param {Object} errorText - объект, содержащий тексты, выводимые при ошибках
    * @param {string} url - адрес, на который отправляются данные
-   * @param {Object} data - данные формы, отправляемые на сервер
+   * @param {Object} [data] - данные формы, отправляемые на сервер
    */
   var getXhr = function (onLoad, onError, method, errorText, url, data) {
     var xhr = new XMLHttpRequest();
@@ -38,16 +38,16 @@
       if (xhr.status === SUCCESS_CODE) {
         onLoad((method === 'POST') ? '' : xhr.response);
       } else {
-        onError(errorText.unknown);
+        onError(errorText.UNKNOWN);
       }
     });
 
     xhr.addEventListener('error', function () {
-      onError(errorText.server);
+      onError(errorText.SERVER);
     });
 
     xhr.addEventListener('timeout', function () {
-      onError(errorText.timeout);
+      onError(errorText.TIMEOUT);
     });
 
     xhr.open(method, url);
@@ -56,11 +56,11 @@
 
   window.backend = {
     load: function (onLoad, onError) {
-      getXhr(onLoad, onError, 'GET', loadErrorText, urlType.LOAD);
+      getXhr(onLoad, onError, 'GET', LoadErrorText, urlType.LOAD);
     },
 
     upload: function (data, onLoad, onError) {
-      getXhr(onLoad, onError, 'POST', uploadErrorText, urlType.UPLOAD, data);
+      getXhr(onLoad, onError, 'POST', UploadErrorText, urlType.UPLOAD, data);
     }
   };
 })();
