@@ -21,7 +21,7 @@
     message.textContent = errorMessage;
     var onEscPress = function (evt) {
       window.utils.callFunctionIfEscPress(evt.keyCode, function () {
-        document.body.removeChild(message);
+        message.remove();
         document.removeEventListener('keydown', onEscPress);
       });
     };

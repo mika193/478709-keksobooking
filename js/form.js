@@ -1,6 +1,9 @@
 'use strict';
 
 (function () {
+  /** @constant {string} */
+  var AVATAR_EXT = 'img/muffin-grey.svg';
+
   var form = document.querySelector('.ad-form');
   var formFieldsets = form.querySelectorAll('fieldset');
   var title = form.querySelector('#title');
@@ -14,7 +17,18 @@
   var guestsNumberOptions = guestsNumber.querySelectorAll('option');
   var reset = form.querySelector('.ad-form__reset');
   var success = document.querySelector('.success');
+  var avatarBox = document.querySelector('#avatar-box');
+  var photoBox = document.querySelector('.ad-form__photo');
+  var avatar = document.querySelector('.ad-form-header__input');
+  var photo = document.querySelector('.ad-form__input');
+  var photoContainer = document.querySelector('.ad-form__photo-container');
   var invalidFields = [];
+  var images = [];
+
+  var PhotoParam = {
+    WIDTH: '70px',
+    HEIGHT: '70px'
+  };
 
   var housingPriceMatch = {
     'bungalo': {
@@ -106,13 +120,80 @@
     document.removeEventListener('keydown', onPopupEscPress);
   };
 
+  /**
+   * Отрисовывает аватар
+   * @param {string} value - значение, которое будет записано в src
+   */
+  var displayAvatar = function (value) {
+    avatarBox.src = value;
+  };
+
+  /**
+   * Отрисовывает фото
+   * @param {string} value - значение, которое будет записано в src
+   */
+  var displayPhoto = function (value) {
+    var imageContainer = photoBox.cloneNode();
+    var image = document.createElement('img');
+    image.src = value;
+    image.style.width = PhotoParam.WIDTH;
+    image.style.height = PhotoParam.HEIGHT;
+    images.push(image);
+    imageContainer.appendChild(image);
+    photoContainer.insertBefore(imageContainer, photoBox);
+  };
+
+  /**
+   * Удаляет изображения, добавленные на страницу пользователем
+   */
+  var deleteImages = function () {
+    images.forEach(function (item) {
+      item.remove();
+    });
+    images = [];
+    avatarBox.src = AVATAR_EXT;
+  };
+
+  /**
+   * Отрисовывает изображения
+   * @param {Array} files - массив загруженных файлов
+   * @param {function} cb - функция - обрабатывающая загруженные файлы
+   */
+  var displayImage = function (files, cb) {
+    var reader = new FileReader();
+    Array.from(files).forEach(function (item) {
+      if (item.type.includes('image/')) {
+        reader.readAsDataURL(item);
+        reader.addEventListener('load', function () {
+          cb(reader.result);
+        });
+      }
+    });
+  };
+
+  var onAvatarChange = function (evt) {
+    displayImage(evt.target.files, displayAvatar);
+  };
+
+  var onPhotoChange = function (evt) {
+    displayImage(evt.target.files, displayPhoto);
+  };
+
   var onHousingTypeChange = setPriceAttributes;
 
   var onRoomNumberChange = setGuestNumber;
 
+  var onElementInput = function (evt) {
+    if (evt.target.checkValidity()) {
+      unhighlightField(evt.target);
+      evt.target.removeEventListener('input', onElementInput);
+    }
+  };
+
   var onElementChange = function (evt) {
     if (!evt.target.checkValidity()) {
       highlightField(evt.target);
+      evt.target.addEventListener('input', onElementInput);
     } else if (invalidFields.indexOf(evt.target) !== -1) {
       unhighlightField(evt.target);
       invalidFields.splice(invalidFields.indexOf(evt.target), 1);
@@ -172,6 +253,8 @@
     form.addEventListener('invalid', onFormInvalid, true);
     reset.addEventListener('click', onResetClick);
     form.addEventListener('submit', onFormSubmit);
+    avatar.addEventListener('change', onAvatarChange);
+    photo.addEventListener('change', onPhotoChange);
   };
 
   /**
@@ -187,6 +270,8 @@
     form.removeEventListener('invalid', onFormInvalid, true);
     reset.removeEventListener('click', onResetClick);
     form.removeEventListener('submit', onFormSubmit);
+    avatar.removeEventListener('change', onAvatarChange);
+    photo.removeEventListener('change', onPhotoChange);
   };
 
   disableForm();
@@ -209,6 +294,7 @@
         unhighlightField(item);
       });
       invalidFields = [];
+      deleteImages();
     },
     setAdressValue: function (value) {
       adressField.value = value;
