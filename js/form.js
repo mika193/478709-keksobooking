@@ -23,7 +23,7 @@
   var photo = document.querySelector('.ad-form__input');
   var photoContainer = document.querySelector('.ad-form__photo-container');
   var invalidFields = [];
-  var images = [];
+  var containers = [];
 
   var PhotoParam = {
     WIDTH: '70px',
@@ -139,8 +139,8 @@
     image.src = value;
     image.style.width = PhotoParam.WIDTH;
     image.style.height = PhotoParam.HEIGHT;
-    images.push(image);
     imageContainer.appendChild(image);
+    containers.push(imageContainer);
     photoContainer.insertBefore(imageContainer, photoBox);
   };
 
@@ -148,10 +148,10 @@
    * Удаляет изображения, добавленные на страницу пользователем
    */
   var deleteImages = function () {
-    images.forEach(function (item) {
+    containers.forEach(function (item) {
       item.remove();
     });
-    images = [];
+    containers = [];
     avatarBox.src = AVATAR_EXT;
   };
 
@@ -161,13 +161,13 @@
    * @param {function} cb - функция - обрабатывающая загруженные файлы
    */
   var displayImage = function (files, cb) {
-    var reader = new FileReader();
     Array.from(files).forEach(function (item) {
+      var reader = new FileReader();
       if (item.type.includes('image/')) {
-        reader.readAsDataURL(item);
         reader.addEventListener('load', function () {
           cb(reader.result);
         });
+        reader.readAsDataURL(item);
       }
     });
   };
