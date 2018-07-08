@@ -2,6 +2,7 @@
 
 * Студент: [Валерия Ларионова](https://up.htmlacademy.ru/javascript/14/user/478709).
 * Наставник: [Олег Петров](https://htmlacademy.ru/profile/fyvfyv).
+* [Демо](https://mika193.github.io/478709-keksobooking/).
 
 ---
 
